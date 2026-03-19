@@ -722,7 +722,7 @@ function pctChip(p,label){
 ══════════════════════════════════════════ */
 function marketCap(item){ return(item.rap!=null&&item.exists!=null)?item.rap*item.exists:null; }
 function aid(rbx){ if(!rbx)return null; const m=rbx.match(/\d+/); return m?m[0]:null; }
-function petImg(name,pt){ const p=S.pets[name]; if(!p)return null; const id=(pt===1&&p.goldenId)?p.goldenId:p.thumbId; return id?BG_IMG+id:null; }
+function petImg(name,pt){ const p=S.pets[name]; if(!p)return null; const id=(pt===1&&p.goldenId)?p.goldenId:p.thumbId; return (id&&id!=='0')?BG_IMG+id:null; }
 function fmt(n){
   if(n==null)return '—';
   if(n>=1e12)return(n/1e12).toFixed(2).replace(/\.?0+$/,'')+'T';
@@ -746,6 +746,11 @@ function vLabelHtml(pt, sh) {
   else if(pt===1) parts.push('<span style="color:#ffd700;font-weight:600">Golden</span>');
   if(sh) parts.push('<span style="color:#d0e4ff;font-weight:600">Shiny</span>');
   return parts.join(' ');
+}
+// varSmall: inline variant label as coloured <small> tag, or empty string
+function varSmall(pt, sh) {
+  const vl = vLabelHtml(pt, sh);
+  return vl ? ' <small>' + vl + '</small>' : '';
 }
 function petDesc(item) {
   if (item.category !== 'Pet') return '';
@@ -1215,7 +1220,7 @@ function openModal(item){
   mico.innerHTML=isPet&&url
     ?'<img class="pi" src="'+url+'">'+vOverlay(cd.pt,cd.sh)
     :'<span class="pp">'+cEmoji(item.category)+'</span>'+vOverlay(cd.pt,cd.sh);
-  document.getElementById('mnam').innerHTML=esc(cd.id)+(vl?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:'');
+  document.getElementById('mnam').innerHTML=esc(cd.id)+(vl?' <small>'+vLabelHtml(cd.pt,cd.sh)+'</small>':'');
   document.getElementById('mbdgs').innerHTML=`<span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt,cd.sh,cd.tn)}`;
   const _petDesc = item.category==='Pet' ? (S.pets[cd.id]?.desc||'') : '';
   const _descEl  = document.getElementById('mdesc');
