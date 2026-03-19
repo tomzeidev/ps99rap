@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PS99 RAP — Pet Simulator 99 Market</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -1021,7 +1022,7 @@ function renderHatchFeed() {
     const url = petImg(meta.id, meta.pt);
     const ratePerMin = H.windowSec>0 ? (delta/(H.windowSec/60)).toFixed(1) : 0;
     const icoImg = url
-      ? '<img src="'+url+'" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2" onerror="this.style.display='none'">'
+      ? '<img src="'+url+'" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2">'
       : '<span style="font-size:12px;position:relative;z-index:2">🐾</span>';
     const icoCell = '<div style="width:24px;height:24px;border-radius:4px;overflow:hidden;background:var(--s3);flex-shrink:0;position:relative;display:inline-flex;align-items:center;justify-content:center;">'
       + icoImg + vOverlay(meta.pt,meta.sh) + '</div>';
