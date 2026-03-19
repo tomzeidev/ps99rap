@@ -1019,11 +1019,18 @@ function renderHatchFeed() {
     const url = petImg(meta.id, meta.pt);
     const sp  = spark(hatchDataForKey(key), 70, 18);
     const ratePerMin = H.windowSec>0 ? (delta/(H.windowSec/60)).toFixed(1) : 0;
-    const icoCell = `<div style="width:24px;height:24px;border-radius:4px;overflow:hidden;background:var(--s3);flex-shrink:0;position:relative;display:inline-flex;align-items:center;justify-content:center;">
-      ${url?`<img src="${url}" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2" onerror="this.style.display='none'">`:
-           `<span style="font-size:12px;position:relative;z-index:2">🐾</span>`}
-      ${vOverlay(meta.pt, meta.sh)}
-    </div>`;
+    const icoImg = url
+      ? '<img src="'+url+'" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2" onerror="this.style.display=\'none\'">'
+      : '<span style="font-size:12px;position:relative;z-index:2">🐾</span>';
+    const icoCell = '<div style="width:24px;height:24px;border-radius:4px;overflow:hidden;background:var(--s3);flex-shrink:0;position:relative;display:inline-flex;align-items:center;justify-content:center;">'
+      + icoImg + vOverlay(meta.pt,meta.sh) + '</div>';
+    const deltaStr = delta>0?'+'+delta.toLocaleString():delta===0?'—':delta.toLocaleString();
+    return '<div class="hatch-trow" data-key="'+esc(key)+'">'
+      +'<div class="ht-name">'+icoCell+'<span>'+esc(meta.id)+varSmall(meta.pt,meta.sh)+'</span></div>'
+      +'<div class="ht-delta'+(delta===0?' zero':'')+'" >'+deltaStr+'</div>'
+      +'<div class="ht-exists">'+fmt(curExists)+'</div>'
+      +'<div class="ht-rate">'+(delta>0?ratePerMin+'/m':'')+'</div>'
+      +'</div>';
     return `<div class="hatch-trow" data-key="${esc(key)}">
       <div class="ht-name">${icoCell}<span>${esc(meta.id)}${(meta.pt||meta.sh)?` <small>${vLabelHtml(meta.pt,meta.sh)}</small>`:''}</span></div>
       <div class="ht-delta${delta===0?' zero':''}">${delta>0?'+'+delta.toLocaleString():delta===0?'—':delta.toLocaleString()}</div>
