@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "deploy:worker": "wrangler deploy",
-    "dev:worker": "wrangler dev"
+    "deploy": "wrangler deploy",
+    "dev":    "wrangler dev"
   },
   "devDependencies": {
     "wrangler": "^3"

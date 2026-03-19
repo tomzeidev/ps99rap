@@ -1,154 +1,170 @@
 # PS99 RAP — Deploy Guide
 
-Two things to deploy:
-1. **Cloudflare Worker** — polls the API every 5 min, stores history server-side
-2. **GitHub Pages** — hosts the frontend (free, static)
-
-Total time: ~10 minutes.
-
----
-
-## Prerequisites (install once)
-
-```bash
-# Node.js required — https://nodejs.org (LTS version)
-node -v   # should print v18 or higher
-
-# Install Wrangler (Cloudflare's CLI)
-npm install -g wrangler
-```
+## What you need
+- A free [Cloudflare account](https://dash.cloudflare.com/sign-up)
+- [Node.js](https://nodejs.org) (LTS) installed
+- Your existing GitHub repo with `index.html` already live on GitHub Pages
 
 ---
 
-## Step 1 — Push the repo to GitHub
+## Part 1 — Deploy the Cloudflare Worker (≈5 min)
 
-Go to **https://github.com/new** and create a repo called `ps99rap` (public, no README).
-
-Then in your terminal, `cd` into this folder and run:
+### 1. Open a terminal in this folder
 
 ```bash
-git init
-git add .
-git commit -m "initial commit"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/ps99rap.git
-git push -u origin main
+cd ps99rap-repo
 ```
 
-Replace `YOUR_USERNAME` with your GitHub username.
-
----
-
-## Step 2 — Deploy the Cloudflare Worker
-
-### 2a. Log in to Cloudflare
+### 2. Install Wrangler
 
 ```bash
-wrangler login
+npm install
 ```
 
-This opens a browser window — just click Allow.
-
-### 2b. Create the KV namespace
+### 3. Log in to Cloudflare
 
 ```bash
-wrangler kv:namespace create PS99_KV
+npx wrangler login
 ```
 
-This prints something like:
-```
-{ binding = "PS99_KV", id = "abc123def456..." }
+A browser window opens → click **Allow**. Come back to the terminal.
+
+### 4. Create the KV namespace
+
+```bash
+npx wrangler kv namespace create PS99_KV
 ```
 
-Copy that `id` value and paste it into `wrangler.toml`:
+The output will look like this:
+
+```
+Add the following to your configuration file in your kv_namespaces array:
+{ binding = "PS99_KV", id = "abc123def456abc123def456abc123de" }
+```
+
+Copy **only the id value** (the long hex string).
+
+Open `wrangler.toml` and paste it in:
 
 ```toml
 [[kv_namespaces]]
 binding = "PS99_KV"
-id      = "abc123def456..."   # ← paste here
+id      = "abc123def456abc123def456abc123de"   ← your id here
 ```
 
-### 2c. Deploy the worker
+### 5. Deploy the worker
 
 ```bash
-npm install
-npm run deploy:worker
+npx wrangler deploy
 ```
 
-It will print your worker URL, something like:
+Output will include your worker URL:
+
 ```
+Published ps99rap-worker (0.09 sec)
 https://ps99rap-worker.YOUR_SUBDOMAIN.workers.dev
 ```
 
-**Copy this URL.**
+Copy that URL.
+
+### 6. Verify it works
+
+Open this in your browser (replace with your URL):
+
+```
+https://ps99rap-worker.YOUR_SUBDOMAIN.workers.dev/status
+```
+
+You should see JSON like:
+```json
+{ "status": "ok", "snapshots_total": 0, "retention_days": 30, ... }
+```
+
+`snapshots_total: 0` is fine — the cron hasn't run yet. If you see JSON, the worker is working.
 
 ---
 
-## Step 3 — Wire the worker URL into the frontend
+## Part 2 — Wire the worker URL into the frontend (1 min)
 
-Open `index.html` and find line ~420:
+Open `index.html` and find this line near the top of the `<script>` block:
 
 ```js
 const WORKER_URL = 'REPLACE_WITH_YOUR_WORKER_URL';
 ```
 
-Replace it with your actual worker URL:
+Replace it:
 
 ```js
 const WORKER_URL = 'https://ps99rap-worker.YOUR_SUBDOMAIN.workers.dev';
 ```
 
-Save, then push the change:
+Save, commit, and push:
 
 ```bash
 git add index.html
-git commit -m "add worker URL"
+git commit -m "connect worker"
 git push
 ```
 
----
-
-## Step 4 — Enable GitHub Pages
-
-1. Go to your repo on GitHub
-2. **Settings → Pages**
-3. Under *Source* → **Deploy from a branch**
-4. Branch: `main`, folder: `/ (root)` → **Save**
-
-After ~1 minute your site is live at:
-```
-https://YOUR_USERNAME.github.io/ps99rap/
-```
+GitHub Pages will update within ~30 seconds.
 
 ---
 
-## How it works
+## Part 3 — Force the first snapshot (optional)
 
-```
-Browser  ──GET /latest──▶  Cloudflare Worker  ──▶  Big Games API
-Browser  ──GET /history──▶  Cloudflare Worker  ──▶  KV Store
+The cron runs every 5 minutes automatically. If you want data immediately, trigger it manually:
 
-Cron (every 5 min):
-  Cloudflare Worker  ──▶  Big Games API  ──▶  KV Store (appends snapshot)
+```bash
+npx wrangler dev
 ```
 
-- History is **shared and server-side** — every visitor sees the same data
-- Up to **288 snapshots** (24 hours at 5-min intervals), then rolling
-- The worker's free tier covers ~100k KV reads/day — more than enough
+Then open: `http://localhost:8787/latest` — this wakes the worker and loads the first snapshot.
 
 ---
 
-## Optional: Custom domain
+## Changing history retention
 
-In Cloudflare Pages or GitHub Pages settings you can attach your own domain (e.g. `ps99rap.com`) for free. Cloudflare handles SSL automatically.
+Open `worker/index.js` and change this line:
+
+```js
+const RETENTION_DAYS = 30;  // ← set to 7, 30, 90, etc.
+```
+
+Then redeploy:
+
+```bash
+npx wrangler deploy
+```
+
+**Cloudflare KV free tier limits:**
+| Limit | Free |
+|-------|------|
+| Reads/day | 100,000 |
+| Writes/day | 1,000 |
+| Storage | 1 GB |
+
+At 5-min intervals that's 288 writes/day + 288 reads/day per user — well within free limits.
 
 ---
 
-## Changing the poll interval
+## Troubleshooting
 
-In `wrangler.toml`:
-```toml
-crons = ["*/5 * * * *"]   # every 5 min — change to "*/1 * * * *" for every minute
-```
+**`wrangler: command not found`**
+→ Use `npx wrangler` instead of `wrangler` throughout
 
-Redeploy with `npm run deploy:worker` after changing.
+**`Error: id is required` when deploying**
+→ You haven't pasted the KV namespace id into `wrangler.toml` yet (step 4)
+
+**Worker URL returns an error page**
+→ Run `npx wrangler tail` in your terminal, then refresh the URL — it prints live error logs
+
+**Site loads but shows "history unavailable"**
+→ Your `WORKER_URL` in `index.html` is still the placeholder — check Part 2
+
+**CORS error in browser console**
+→ The worker already sets `Access-Control-Allow-Origin: *` so this shouldn't happen.
+  If it does, make sure you deployed *after* the latest code (re-run `npx wrangler deploy`)
+
+**`/status` returns `snapshots_total: 0` after a few minutes**
+→ The cron may not have fired yet in development. Run `npx wrangler dev` and hit `/latest`
+  to trigger a manual snapshot, or just wait — it runs every 5 min in production.

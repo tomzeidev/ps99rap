@@ -1,450 +1,330 @@
 /**
- * PS99 RAP Worker
+ * PS99 RAP — Worker (minimal, correct)
  *
- * Goals:
- * - Keep data fresh with a 30-second revalidation window.
- * - Persist compact history in KV.
- * - Prebuild the full /all payload during cron and revalidate on demand when stale.
- * - Keep request handlers as close to O(1) as possible.
+ * Lessons learned:
+ * - Only track NORMAL (pt=0, sh=false) Huges/Titanics for hatch feed
+ * - Only track RAP items for price history (no exists history — too many keys)
+ * - Keep each snapshot to ONE number per item: the RAP value only
+ * - Exists values come from /latest on every request, not from history
+ *
+ * This keeps state tiny regardless of how many items the API returns.
+ *
+ * State sizes at 288 snaps:
+ *   price-state: ~1500 items × 288 snaps × ~8 bytes = ~3.5 MB  ✓
+ *   hatch-state: ~200 pets  × 2016 snaps × ~8 bytes = ~3.2 MB  ✓
  */
 
-const API_RAP = 'https://ps99.biggamesapi.io/api/rap';
+const API_RAP    = 'https://ps99.biggamesapi.io/api/rap';
 const API_EXISTS = 'https://ps99.biggamesapi.io/api/exists';
-const API_PETS = 'https://ps99.biggamesapi.io/api/collection/Pets';
-
+const API_PETS   = 'https://ps99.biggamesapi.io/api/collection/Pets';
 const PRICE_SNAPS = 288;
 const HATCH_SNAPS = 2016;
-const CACHE_TTL = 30;
-const STATE_VER = 8;
-const MAX_DATA_AGE_MS = 30 * 1000;
-
-const KV_KEYS = {
-  priceState: 'price-state',
-  hatchState: 'hatch-state',
-  latest: 'latest',
-  all: 'payload:all',
-};
+const CACHE_TTL   = 240;
+const STATE_VER   = 7;
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json',
 };
 
-let refreshInFlight = null;
-
-const jsonHeaders = (cache = true) => ({
-  ...CORS,
-  'Cache-Control': cache
-    ? `public, max-age=${CACHE_TTL}, s-maxage=${CACHE_TTL}`
-    : 'no-store',
+const ok = (data, cache = true) => new Response(JSON.stringify(data), {
+  headers: {
+    ...CORS,
+    'Cache-Control': cache
+      ? `public, max-age=${CACHE_TTL}, s-maxage=${CACHE_TTL}`
+      : 'no-store',
+  },
 });
 
-function jsonResponse(data, cache = true, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: jsonHeaders(cache),
-  });
-}
-
-function safeParse(raw, fallback) {
-  if (!raw) return fallback;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return fallback;
-  }
-}
-
 function mergeKey(d) {
-  const c = d.configData || {};
-  return `${d.category}|${c.id}|${c.pt || 0}|${c.tn || 0}|${c.sh ? 1 : 0}`;
+  const c = d.configData;
+  return `${d.category}|${c.id}|${c.pt||0}|${c.tn||0}|${c.sh?1:0}`;
 }
 
-function parseState(raw, kind) {
-  const fallback = kind === 'price'
-    ? { ver: STATE_VER, keys: [], snaps: [] }
-    : { ver: STATE_VER, keys: [], meta: [], snaps: [] };
-
-  const state = safeParse(raw, fallback);
-  const keyLimit = kind === 'price' ? 3000 : 1000;
-
-  if (!state || state.ver !== STATE_VER || !Array.isArray(state.keys) || state.keys.length > keyLimit) {
-    return fallback;
-  }
-
-  if (!Array.isArray(state.snaps)) state.snaps = [];
-  if (kind === 'price') {
-    if (!Array.isArray(state.meta)) state.meta = [];
-  } else {
-    if (!Array.isArray(state.meta)) state.meta = [];
-  }
-
-  return state;
-}
-
-function getOrAddKey(state, key, map) {
-  let idx = map.get(key);
-  if (idx === undefined) {
-    idx = state.keys.length;
-    state.keys.push(key);
-    map.set(key, idx);
-  }
-  return idx;
-}
-
-async function fetchJson(url, label, timeoutMs = 15000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { signal: controller.signal });
-    if (!res.ok) {
-      throw new Error(`${label} HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    if (!data || data.status !== 'ok' || !Array.isArray(data.data)) {
-      throw new Error(`${label} returned unexpected payload`);
-    }
-    return data;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-function buildExclusivePetSet(petsData) {
-  const exclusiveNames = new Set();
-  for (const pet of petsData || []) {
-    if (pet?.configData?.rarity?.RarityNumber === 999) {
-      exclusiveNames.add(pet.configName);
-    }
-  }
-  return exclusiveNames;
-}
-
-function buildExpandedPayload(ps, hs, latest) {
-  const historyData = ps.snaps.map((snap) => {
-    const d = {};
-    for (const [ki, v] of Object.entries(snap.d || {})) {
-      d['r|' + ps.keys[ki]] = v;
-    }
-    return { ts: snap.ts, d };
-  });
-
-  const petMeta = {};
-  for (let i = 0; i < hs.keys.length; i++) {
-    const meta = hs.meta[i];
-    if (meta) petMeta[hs.keys[i]] = meta;
-  }
-
-  const hatchSnapshots = hs.snaps.map((snap) => {
-    const d = {};
-    for (const [ki, v] of Object.entries(snap.d || {})) {
-      d[hs.keys[ki]] = v;
-    }
-    return { ts: snap.ts, d };
-  });
-
-  return {
-    status: 'ok',
-    ts: latest.ts,
-    rap: latest.rap,
-    exists: latest.exists,
-    history: {
-      count: historyData.length,
-      retention_days: Math.round((PRICE_SNAPS * 5 / 1440) * 10) / 10,
-      data: historyData,
-    },
-    hatch: {
-      count: hatchSnapshots.length,
-      petMeta,
-      snapshots: hatchSnapshots,
-    },
-  };
-}
-
-async function loadStates(env) {
-  const [psRaw, hsRaw, latestRaw, allRaw] = await Promise.all([
-    env.PS99_KV.get(KV_KEYS.priceState),
-    env.PS99_KV.get(KV_KEYS.hatchState),
-    env.PS99_KV.get(KV_KEYS.latest),
-    env.PS99_KV.get(KV_KEYS.all),
-  ]);
-
-  return {
-    ps: parseState(psRaw, 'price'),
-    hs: parseState(hsRaw, 'hatch'),
-    latest: safeParse(latestRaw, null),
-    allRaw,
-  };
-}
-
-async function persistStates(env, ps, hs, latest, allPayload) {
-  await Promise.all([
-    env.PS99_KV.put(KV_KEYS.priceState, JSON.stringify(ps)),
-    env.PS99_KV.put(KV_KEYS.hatchState, JSON.stringify(hs)),
-    env.PS99_KV.put(KV_KEYS.latest, JSON.stringify(latest)),
-    env.PS99_KV.put(KV_KEYS.all, allPayload),
-  ]);
-}
-
-function isPayloadStale(latestRaw, maxAgeMs = MAX_DATA_AGE_MS) {
-  const latest = safeParse(latestRaw, null);
-  if (!latest?.ts) return true;
-  return (Date.now() - latest.ts) > maxAgeMs;
-}
-
-async function refreshOnce(env) {
-  if (!refreshInFlight) {
-    refreshInFlight = refreshFromApis(env).finally(() => {
-      refreshInFlight = null;
-    });
-  }
-  return refreshInFlight;
-}
-
-async function refreshFromApis(env) {
+// ─── CRON ─────────────────────────────────────────────────────────────────────
+async function handleCron(env) {
   const [rapRes, exRes, petsRes] = await Promise.all([
-    fetchJson(API_RAP, 'rap'),
-    fetchJson(API_EXISTS, 'exists'),
-    fetchJson(API_PETS, 'pets'),
+    fetch(API_RAP).then(r => r.json()),
+    fetch(API_EXISTS).then(r => r.json()),
+    fetch(API_PETS).then(r => r.json()),
   ]);
+  if (rapRes.status !== 'ok' || exRes.status !== 'ok') {
+    console.error('[cron] bad API'); return;
+  }
 
-  const exclusiveNames = buildExclusivePetSet(petsRes.data);
+  // Build set of exclusive pet names (RarityNumber === 999)
+  const exclusiveNames = new Set();
+  for (const p of (petsRes.data || [])) {
+    if (p.configData?.rarity?.RarityNumber === 999) {
+      exclusiveNames.add(p.configName);
+    }
+  }
+  console.log(`[cron] exclusive pets: ${exclusiveNames.size}`);
   const ts = Date.now();
 
-  const { ps, hs } = await loadStates(env);
-  const psMap = new Map(ps.keys.map((k, i) => [k, i]));
-  const hsMap = new Map(hs.keys.map((k, i) => [k, i]));
-  const hsSeen = new Set(hs.keys.map((_, i) => i));
-
-  const priceSnap = { ts, d: {} };
-  for (const item of rapRes.data) {
-    if (item?.value == null) continue;
-    if (!exclusiveNames.has(item?.configData?.id)) continue;
-    priceSnap.d[getOrAddKey(ps, mergeKey(item), psMap)] = item.value;
-  }
-  ps.snaps.push(priceSnap);
-  if (ps.snaps.length > PRICE_SNAPS) ps.snaps = ps.snaps.slice(-PRICE_SNAPS);
-
-  const hatchSnap = { ts, d: {} };
-  for (const item of exRes.data) {
-    if (item?.category !== 'Pet') continue;
-    if (item?.value == null) continue;
-
-    const c = item.configData || {};
-    if (!exclusiveNames.has(c.id)) continue;
-    if (c.pt || c.sh || c.tn) continue;
-
-    const key = mergeKey(item);
-    const idx = getOrAddKey(hs, key, hsMap);
-    if (!hsSeen.has(idx)) {
-      hsSeen.add(idx);
-      hs.meta.push({ id: c.id, pt: 0, tn: 0, sh: false });
-    }
-    hatchSnap.d[idx] = item.value;
-  }
-  hs.snaps.push(hatchSnap);
-  if (hs.snaps.length > HATCH_SNAPS) hs.snaps = hs.snaps.slice(-HATCH_SNAPS);
-
-  const latest = {
-    status: 'ok',
-    ts,
-    rap: rapRes.data,
-    exists: exRes.data,
-  };
-
-  const allPayloadObj = buildExpandedPayload(ps, hs, latest);
-  const allPayload = JSON.stringify(allPayloadObj);
-
-  await persistStates(env, ps, hs, latest, allPayload);
-
-  return {
-    latest,
-    allPayload,
-    stats: {
-      priceSnapshots: ps.snaps.length,
-      priceKeys: ps.keys.length,
-      hatchSnapshots: hs.snaps.length,
-      hatchKeys: hs.keys.length,
-      allKB: Math.round(allPayload.length / 1024),
-    },
-  };
-}
-
-async function getAllPayload(env, ctx) {
-  const cache = caches.default;
-  const cacheKey = new Request('https://ps99-edge.internal/all');
-  const cached = await cache.match(cacheKey);
-  if (cached) return cached;
-
-  const [latestRaw, allRaw] = await Promise.all([
-    env.PS99_KV.get(KV_KEYS.latest),
-    env.PS99_KV.get(KV_KEYS.all),
+  // ── Price state ──────────────────────────────────────────────────────────
+  // ONLY tracks RAP items. Each snapshot = {ki: rapValue} sparse object.
+  // No exists history — exists comes from /latest only.
+  const [psRaw, hsRaw] = await Promise.all([
+    env.PS99_KV.get('price-state'),
+    env.PS99_KV.get('hatch-state'),
   ]);
 
-  if (!allRaw || isPayloadStale(latestRaw)) {
-    await refreshOnce(env);
-    const rebuilt = await env.PS99_KV.get(KV_KEYS.all);
-    if (!rebuilt) throw new Error('Payload unavailable after refresh');
-    const response = new Response(rebuilt, { headers: jsonHeaders(true) });
-    ctx.waitUntil(cache.put(cacheKey, response.clone()));
-    return response;
+  let ps = { ver: STATE_VER, keys: [], snaps: [] };
+  if (psRaw) {
+    try {
+      const loaded = JSON.parse(psRaw);
+      // Accept only if correct version and sane key count
+      if (loaded.ver === STATE_VER && Array.isArray(loaded.keys) && loaded.keys.length < 3000) {
+        ps = loaded;
+      } else {
+        console.log(`[cron] price-state discarded (ver=${loaded.ver} keys=${(loaded.keys||[]).length})`);
+      }
+    } catch (_) {}
   }
 
-  const response = new Response(allRaw, { headers: jsonHeaders(true) });
-  ctx.waitUntil(cache.put(cacheKey, response.clone()));
-  return response;
+  // Build key map from existing keys (O(1) lookups)
+  const psKm = new Map(ps.keys.map((k, i) => [k, i]));
+
+  function psKey(k) {
+    let i = psKm.get(k);
+    if (i === undefined) { i = ps.keys.length; ps.keys.push(k); psKm.set(k, i); }
+    return i;
+  }
+
+  // Build sparse RAP snapshot — exclusive pets only (RarityNumber 999), all variants
+  const snap = { ts, d: {} };
+  for (const d of rapRes.data) {
+    if (!d.value) continue;
+    if (!exclusiveNames.has(d.configData.id)) continue;
+    snap.d[psKey(mergeKey(d))] = d.value;
+  }
+  ps.snaps.push(snap);
+  if (ps.snaps.length > PRICE_SNAPS) ps.snaps = ps.snaps.slice(-PRICE_SNAPS);
+
+  // ── Hatch state ──────────────────────────────────────────────────────────
+  // ONLY normal (pt=0, sh=false) Huge + Titanic pets.
+  // Each snapshot = {ki: existsValue} sparse object.
+  let hs = { ver: STATE_VER, keys: [], meta: [], snaps: [] };
+  if (hsRaw) {
+    try {
+      const loaded = JSON.parse(hsRaw);
+      if (loaded.ver === STATE_VER && Array.isArray(loaded.keys) && loaded.keys.length < 1000) {
+        hs = loaded;
+      } else {
+        console.log(`[cron] hatch-state discarded (ver=${loaded.ver} keys=${(loaded.keys||[]).length})`);
+      }
+    } catch (_) {}
+  }
+
+  const hsKm    = new Map(hs.keys.map((k, i) => [k, i]));
+  const hsKiSet = new Set(hs.keys.map((_, i) => i));
+
+  function hsKey(k) {
+    let i = hsKm.get(k);
+    if (i === undefined) { i = hs.keys.length; hs.keys.push(k); hsKm.set(k, i); }
+    return i;
+  }
+
+  const hSnap = { ts, d: {} };
+  for (const d of exRes.data) {
+    if (d.category !== 'Pet') continue;
+    const c = d.configData;
+    if (!d.value) continue;
+    // Exclusive pets only, normal variants only for hatch counting
+    if (!exclusiveNames.has(c.id)) continue;
+    if (c.pt || c.sh || c.tn) continue;
+    const k  = mergeKey(d);
+    const ki = hsKey(k);
+    if (!hsKiSet.has(ki)) {
+      hsKiSet.add(ki);
+      hs.meta.push({ id: c.id, pt: 0, tn: 0, sh: false });
+    }
+    hSnap.d[ki] = d.value;
+  }
+  hs.snaps.push(hSnap);
+  if (hs.snaps.length > HATCH_SNAPS) hs.snaps = hs.snaps.slice(-HATCH_SNAPS);
+
+  // ── Write 3 KV keys ──────────────────────────────────────────────────────
+  const psStr = JSON.stringify(ps);
+  const hsStr = JSON.stringify(hs);
+
+  await Promise.all([
+    env.PS99_KV.put('price-state', psStr),
+    env.PS99_KV.put('hatch-state', hsStr),
+    env.PS99_KV.put('latest', JSON.stringify({ ts, rap: rapRes.data, exists: exRes.data })),
+  ]);
+
+  try { await caches.default.delete(new Request('https://ps99-edge.internal/all')); } catch (_) {}
+
+  console.log(`[cron] price: ${ps.snaps.length} snaps, ${ps.keys.length} keys, ${Math.round(psStr.length/1024)}KB`);
+  console.log(`[cron] hatch: ${hs.snaps.length} snaps, ${hs.keys.length} pets, ${Math.round(hsStr.length/1024)}KB`);
 }
 
-function responseFromLatest(latestRaw) {
-  const latest = safeParse(latestRaw, null);
-  return jsonResponse(latest || { status: 'ok', ts: null, rap: [], exists: [] });
+// ─── Expand → /all payload ────────────────────────────────────────────────────
+function expand(ps, hs, latest) {
+  // Price history: sparse {ki: rapValue} → {mergeKey: value}
+  const priceData = ps.snaps.map(snap => {
+    const d = {};
+    for (const [ki, v] of Object.entries(snap.d)) {
+      d['r|' + ps.keys[ki]] = v;
+    }
+    // Also populate exists from latest for current snapshot richness
+    return { ts: snap.ts, d };
+  });
+
+  // Hatch: build petMeta + expand snapshots
+  const petMeta = {};
+  for (let i = 0; i < hs.keys.length; i++) {
+    const m = hs.meta[i];
+    if (m) petMeta[hs.keys[i]] = m;
+  }
+  const hatchSnapshots = hs.snaps.map(snap => {
+    const d = {};
+    for (const [ki, v] of Object.entries(snap.d)) d[hs.keys[ki]] = v;
+    return { ts: snap.ts, d };
+  });
+
+  return {
+    status: 'ok', ts: latest.ts, rap: latest.rap, exists: latest.exists,
+    history: {
+      count: priceData.length,
+      retention_days: Math.round(PRICE_SNAPS * 5 / 1440 * 10) / 10,
+      data:  priceData,
+    },
+    hatch: { count: hatchSnapshots.length, petMeta, snapshots: hatchSnapshots },
+  };
 }
 
-async function handleCron(env) {
-  const result = await refreshFromApis(env);
-  console.log(`[cron] price: ${result.stats.priceSnapshots} snaps, ${result.stats.priceKeys} keys`);
-  console.log(`[cron] hatch: ${result.stats.hatchSnapshots} snaps, ${result.stats.hatchKeys} keys`);
-  console.log(`[cron] payload: ${result.stats.allKB}KB`);
-}
-
+// ─── HTTP handler ─────────────────────────────────────────────────────────────
 async function handleFetch(req, env, ctx) {
   const path = new URL(req.url).pathname;
-
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: CORS });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
 
   if (path === '/status') {
     const [psRaw, hsRaw, latRaw] = await Promise.all([
-      env.PS99_KV.get(KV_KEYS.priceState),
-      env.PS99_KV.get(KV_KEYS.hatchState),
-      env.PS99_KV.get(KV_KEYS.latest),
+      env.PS99_KV.get('price-state'),
+      env.PS99_KV.get('hatch-state'),
+      env.PS99_KV.get('latest'),
     ]);
-    const ps = parseState(psRaw, 'price');
-    const hs = parseState(hsRaw, 'hatch');
-    const lat = safeParse(latRaw, {});
-    const pSnaps = ps.snaps.length;
-
-    return jsonResponse({
-      status: 'ok',
-      state_version: ps.ver,
-      price_snapshots: pSnaps,
-      hatch_snapshots: hs.snaps.length,
-      price_keys: ps.keys.length,
-      hatch_pets: hs.keys.length,
-      price_state_kb: psRaw ? Math.round(psRaw.length / 1024) : 0,
-      hatch_state_kb: hsRaw ? Math.round(hsRaw.length / 1024) : 0,
+    const ps  = psRaw  ? JSON.parse(psRaw)  : {};
+    const hs  = hsRaw  ? JSON.parse(hsRaw)  : {};
+    const lat = latRaw ? JSON.parse(latRaw) : {};
+    const pSnaps = (ps.snaps||[]).length;
+    return ok({
+      status:              'ok',
+      state_version:       ps.ver,
+      price_snapshots:     pSnaps,
+      hatch_snapshots:     (hs.snaps||[]).length,
+      price_keys:          (ps.keys||[]).length,
+      hatch_pets:          (hs.keys||[]).length,
+      price_state_kb:      psRaw ? Math.round(psRaw.length/1024) : 0,
+      hatch_state_kb:      hsRaw ? Math.round(hsRaw.length/1024) : 0,
+      // Accurate projection: keys array is fixed overhead, each snap is incremental
       projected_288snap_kb: pSnaps > 0
-        ? Math.round((psRaw.length / 1024) - ((psRaw.length / 1024 / pSnaps) * pSnaps) + ((psRaw.length / 1024 / pSnaps) * PRICE_SNAPS))
+        ? Math.round((
+            psRaw.length/1024                          // current total
+            - (psRaw.length/1024/pSnaps) * pSnaps      // minus snap portion
+            + (psRaw.length/1024/pSnaps) * PRICE_SNAPS // plus 288 snaps worth
+          ))
         : 0,
-      latest_ts: lat.ts ? new Date(lat.ts).toISOString() : null,
+      latest_ts:           lat.ts ? new Date(lat.ts).toISOString() : null,
     }, false);
   }
 
   if (path === '/seed') {
     ctx.waitUntil(handleCron(env));
-    return jsonResponse({ status: 'ok', message: 'Seeding…' }, false);
+    return ok({ status:'ok', message:'Seeding…' }, false);
   }
 
   if (path === '/reset') {
+    // Delete all known KV keys then run cron synchronously
     await Promise.all([
-      env.PS99_KV.delete(KV_KEYS.priceState),
-      env.PS99_KV.delete(KV_KEYS.hatchState),
-      env.PS99_KV.delete(KV_KEYS.latest),
-      env.PS99_KV.delete(KV_KEYS.all),
+      env.PS99_KV.delete('price-state'),
+      env.PS99_KV.delete('hatch-state'),
+      env.PS99_KV.delete('latest'),
+      env.PS99_KV.delete('state'),
+      env.PS99_KV.delete('payload:all'),
+      env.PS99_KV.delete('price-buffer'),
+      env.PS99_KV.delete('hatch-buffer'),
     ]);
     await handleCron(env);
-    return jsonResponse({ status: 'ok', message: 'Reset complete.' }, false);
+    return ok({ status:'ok', message:'Reset complete.' }, false);
   }
 
+  // /debug — inspect raw API counts without storing anything
   if (path === '/debug') {
     const [rapRes, exRes, petsRes] = await Promise.all([
-      fetchJson(API_RAP, 'rap'),
-      fetchJson(API_EXISTS, 'exists'),
-      fetchJson(API_PETS, 'pets'),
+      fetch(API_RAP).then(r => r.json()),
+      fetch(API_EXISTS).then(r => r.json()),
+      fetch(API_PETS).then(r => r.json()),
     ]);
-    const excl = buildExclusivePetSet(petsRes.data);
-    const rapExcl = rapRes.data.filter((d) => excl.has(d?.configData?.id)).length;
-    const hatchExcl = exRes.data.filter((d) => (
-      d?.category === 'Pet' &&
-      excl.has(d?.configData?.id) &&
-      !d?.configData?.pt &&
-      !d?.configData?.sh &&
-      !d?.configData?.tn
-    )).length;
-
-    return jsonResponse({
+    const excl = new Set();
+    for (const p of (petsRes.data||[])) {
+      if (p.configData?.rarity?.RarityNumber === 999) excl.add(p.configName);
+    }
+    const rapExcl     = rapRes.data.filter(d => excl.has(d.configData.id)).length;
+    const hatchExcl   = exRes.data.filter(d => d.category==='Pet' && excl.has(d.configData.id) && !d.configData.pt && !d.configData.sh && !d.configData.tn).length;
+    return ok({
       exclusive_pet_names: excl.size,
-      rap_items_total: rapRes.data.length,
-      rap_exclusive: rapExcl,
+      rap_items_total:     rapRes.data.length,
+      rap_exclusive:       rapExcl,
       hatch_exclusive_normal: hatchExcl,
-      projected_price_kb: Math.round((rapExcl * 288 * 10) / 1024),
-      projected_hatch_kb: Math.round((hatchExcl * HATCH_SNAPS * 8) / 1024),
+      projected_price_kb:  Math.round(rapExcl * 288 * 10 / 1024),
+      projected_hatch_kb:  Math.round(hatchExcl * 2016 * 8 / 1024),
     }, false);
   }
 
-  if (path === '/all') {
-    return await getAllPayload(env, ctx);
-  }
+  // Edge cache
+  const cache    = caches.default;
+  const cacheKey = new Request('https://ps99-edge.internal/all');
+  let   cached   = await cache.match(cacheKey);
 
-  if (path === '/latest' || path === '/history' || path === '/hatch-history') {
-    const [latestRaw, allRaw] = await Promise.all([
-      env.PS99_KV.get(KV_KEYS.latest),
-      env.PS99_KV.get(KV_KEYS.all),
+  if (!cached) {
+    const [psRaw, hsRaw, latRaw] = await Promise.all([
+      env.PS99_KV.get('price-state'),
+      env.PS99_KV.get('hatch-state'),
+      env.PS99_KV.get('latest'),
     ]);
-
-    if (!allRaw || isPayloadStale(latestRaw)) {
-      await refreshOnce(env);
+    let payload;
+    if (!latRaw) {
+      ctx.waitUntil(handleCron(env));
+      const [rr, er] = await Promise.all([
+        fetch(API_RAP).then(r => r.json()),
+        fetch(API_EXISTS).then(r => r.json()),
+      ]);
+      payload = { status:'ok', ts:Date.now(), rap:rr.data, exists:er.data,
+        history:{ count:0, data:[] }, hatch:{ count:0, petMeta:{}, snapshots:[] } };
+    } else {
+      const ps = psRaw ? JSON.parse(psRaw) : { keys:[], snaps:[] };
+      const hs = hsRaw ? JSON.parse(hsRaw) : { keys:[], meta:[], snaps:[] };
+      payload = expand(ps, hs, JSON.parse(latRaw));
     }
-
-    const freshLatestRaw = await env.PS99_KV.get(KV_KEYS.latest);
-    const freshAllRaw = await env.PS99_KV.get(KV_KEYS.all);
-
-    if (path === '/latest') {
-      return responseFromLatest(freshLatestRaw);
-    }
-
-    if (!freshAllRaw) {
-      throw new Error('Unable to rebuild payload');
-    }
-
-    const payload = safeParse(freshAllRaw, {});
-    if (path === '/history') {
-      return jsonResponse({ status: 'ok', ...(payload.history || { count: 0, data: [] }) });
-    }
-    return jsonResponse({
-      status: 'ok',
-      count: payload.hatch?.count || 0,
-      petMeta: payload.hatch?.petMeta || {},
-      snapshots: payload.hatch?.snapshots || [],
-    });
+    const body = JSON.stringify(payload);
+    ctx.waitUntil(cache.put(cacheKey, new Response(body, {
+      headers: { ...CORS, 'Cache-Control': `public, max-age=${CACHE_TTL}, s-maxage=${CACHE_TTL}` },
+    })));
+    cached = new Response(body, { headers: CORS });
   }
 
-  return new Response(JSON.stringify({ error: 'Not found' }), {
-    status: 404,
-    headers: CORS,
-  });
+  if (path === '/all') return cached;
+  const p = await cached.json();
+  const h = { headers: { ...CORS, 'Cache-Control': `public, max-age=${CACHE_TTL}` } };
+  if (path === '/latest')        return new Response(JSON.stringify({ status:'ok', ts:p.ts, rap:p.rap, exists:p.exists }), h);
+  if (path === '/history')       return new Response(JSON.stringify({ status:'ok', ...p.history }), h);
+  if (path === '/hatch-history') return new Response(JSON.stringify({ status:'ok', count:p.hatch.count, petMeta:p.hatch.petMeta, snapshots:p.hatch.snapshots }), h);
+  return new Response(JSON.stringify({ error:'Not found' }), { status:404, headers:CORS });
 }
 
 export default {
   fetch: async (req, env, ctx) => {
-    try {
-      return await handleFetch(req, env, ctx);
-    } catch (e) {
-      console.error('[fetch]', e);
-      return new Response(JSON.stringify({ error: e?.message || 'Internal error' }), {
-        status: 500,
-        headers: CORS,
-      });
-    }
+    try { return await handleFetch(req, env, ctx); }
+    catch (e) { return new Response(JSON.stringify({error:e.message}), {status:500, headers:CORS}); }
   },
-  scheduled: async (_event, env) => {
-    try {
-      await handleCron(env);
-    } catch (e) {
-      console.error('[cron]', e);
-    }
+  scheduled: async (_e, env) => {
+    try { await handleCron(env); }
+    catch (e) { console.error('[cron]', e.message); }
   },
 };
