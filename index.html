@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PS99 RAP — Pet Simulator 99 Prices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#09090d; --s1:#101115; --s2:#14161d; --s3:#1b1e28;
+  --b1:#1f2333; --b2:#2a3050;
+  --acc:#f7b731; --acc2:#ff6b35;
+  --teal:#4ecdc4;
+  --txt:#e6e8f0; --t2:#828ba8; --t3:#474f68;
+  --grn:#2ecc71; --red:#e74c3c;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 40% at 8% -5%,rgba(247,183,49,.05) 0%,transparent 60%),
+             radial-gradient(ellipse 50% 35% at 92% 105%,rgba(78,205,196,.04) 0%,transparent 60%)}
+
+/* ── LOADER ── */
+#ldr{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:9999;gap:16px;
+  transition:opacity .4s,visibility .4s}
+#ldr.gone{opacity:0;visibility:hidden;pointer-events:none}
+.ld-logo{font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:700;letter-spacing:3px}
+.ld-logo span{background:linear-gradient(90deg,var(--acc),var(--acc2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ld-bar{width:220px;height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
+.ld-prog{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));
+  border-radius:2px;width:0;transition:width .22s ease}
+.ld-txt{font-size:11.5px;color:var(--t3);font-family:'Space Mono',monospace}
+
+/* ── HEADER ── */
+header{position:sticky;top:0;z-index:200;background:rgba(9,9,13,.93);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--b1);padding:0 24px}
+.hdr{max-width:1440px;margin:0 auto;display:flex;align-items:center;gap:14px;height:56px}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0}
+.logo-box{width:32px;height:32px;background:linear-gradient(135deg,var(--acc),var(--acc2));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-txt{font-family:'Rajdhani',sans-serif;font-size:21px;font-weight:700;color:var(--txt)}
+.logo-txt b{color:var(--acc)}
+.hpills{display:flex;gap:7px;margin-left:auto;flex-shrink:0}
+.pill{background:var(--s2);border:1px solid var(--b1);border-radius:20px;
+  padding:3px 11px;font-size:10.5px;color:var(--t2);
+  display:flex;align-items:center;gap:5px;white-space:nowrap}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+#hts{font-size:10.5px;color:var(--t3)}
+
+/* ── MAIN ── */
+main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:26px 24px}
+
+.hero{margin-bottom:20px}
+.hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(24px,3.5vw,42px);
+  font-weight:700;line-height:1.1;letter-spacing:.4px;margin-bottom:5px}
+.hero h1 em{font-style:normal;
+  background:linear-gradient(90deg,var(--acc),var(--acc2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--t2);font-size:13px}
+
+/* ── CONTROLS ── */
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.sw{position:relative;flex:1;min-width:190px;max-width:340px}
+.sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--t3);pointer-events:none}
+.si{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;
+  padding:8px 10px 8px 33px;color:var(--txt);font-size:13px;
+  font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+.si::placeholder{color:var(--t3)}
+.si:focus{border-color:var(--b2)}
+.tg{display:flex;background:var(--s2);border:1px solid var(--b1);
+  border-radius:8px;padding:3px;gap:2px}
+.tb{background:none;border:none;cursor:pointer;padding:5px 12px;border-radius:6px;
+  font-size:12.5px;font-family:'Inter',sans-serif;color:var(--t2);
+  transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.tb.on{background:var(--acc);color:#000;font-weight:600}
+.tb:not(.on):hover{color:var(--txt);background:var(--b1)}
+
+/* ── FILTER ROWS ── */
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.cb{background:var(--s2);border:1px solid var(--b1);border-radius:20px;
+  padding:3px 10px;font-size:11px;font-family:'Inter',sans-serif;
+  color:var(--t2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+.cb .cn{background:var(--s3);border-radius:10px;padding:0 5px;
+  font-size:9px;color:var(--t3);font-family:'Space Mono',monospace}
+.cb.on{border-color:var(--acc);color:var(--acc);background:rgba(247,183,49,.07)}
+.cb.on .cn{background:rgba(247,183,49,.14);color:var(--acc)}
+.cb:not(.on):hover{color:var(--txt);border-color:var(--b2)}
+
+.vfilts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.vfilt-lbl{font-size:11px;color:var(--t3)}
+.vb{background:var(--s2);border:1px solid var(--b1);border-radius:6px;
+  padding:3px 10px;font-size:11px;font-family:'Inter',sans-serif;
+  color:var(--t2);cursor:pointer;transition:all .15s}
+.vb.on{border-color:var(--acc);color:var(--acc);background:rgba(247,183,49,.07)}
+.vb-gld.on{border-color:#ffd700;color:#ffd700;background:rgba(255,215,0,.07)}
+.vb-rb.on{border-color:#cc88ff;color:#cc88ff;background:rgba(180,100,255,.07)}
+.vb-sh.on{border-color:#c8dcff;color:#c8dcff;background:rgba(200,220,255,.07)}
+.vb:not(.on):hover{color:var(--txt);border-color:var(--b2)}
+
+/* ── SORT BAR ── */
+.srt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.srt-lbl{font-size:11px;color:var(--t3)}
+.srt-btns{display:flex;gap:4px}
+.sb{background:none;border:1px solid var(--b1);border-radius:6px;
+  padding:3px 9px;font-size:11px;font-family:'Inter',sans-serif;
+  color:var(--t2);cursor:pointer;transition:all .15s}
+.sb.on{border-color:var(--acc);color:var(--acc);background:rgba(247,183,49,.06)}
+.sb:not(.on):hover{color:var(--txt);border-color:var(--b2)}
+.rct{margin-left:auto;font-size:11px;color:var(--t3)}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.listv{display:flex;flex-direction:column;gap:4px}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;
+  cursor:pointer;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s;
+  position:relative;overflow:hidden;contain:layout style;animation:fi .22s ease both}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--cc,var(--b1));opacity:0;transition:opacity .15s}
+.card:hover{border-color:var(--b2);background:var(--s2);
+  transform:translateY(-2px);box-shadow:0 5px 20px rgba(0,0,0,.3)}
+.card:hover::after{opacity:1}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── PET ICON AREA ── */
+.iw{position:relative;width:100%;aspect-ratio:1;overflow:hidden;
+  background:var(--s3);border-radius:9px 9px 0 0;
+  display:flex;align-items:center;justify-content:center}
+.pi{width:80%;height:80%;object-fit:contain;display:block;position:relative;z-index:2}
+.pp{font-size:46px;z-index:2;position:relative;user-select:none;line-height:1}
+
+/* Overlays */
+.ov-rb{position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:linear-gradient(135deg,#ff4466 0%,#ff9900 20%,#ffee00 40%,#44ee44 60%,#44aaff 80%,#cc44ff 100%);
+  mix-blend-mode:color;opacity:.68;will-change:filter;
+  animation:rbhue 4s linear infinite}
+@keyframes rbhue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
+.ov-gld{position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:radial-gradient(circle at 38% 38%,rgba(255,220,60,.5),rgba(255,140,0,.3) 56%,transparent 78%);
+  mix-blend-mode:overlay}
+.ov-sh{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.ov-sh::before,.ov-sh::after{content:'✦ ✦ ✦';position:absolute;font-size:10px;
+  color:rgba(255,255,255,.88);text-shadow:0 0 5px #fff,0 0 9px #ffe;
+  animation:spk 2.6s ease-in-out infinite;letter-spacing:6px}
+.ov-sh::before{top:6px;left:8%;animation-delay:.5s}
+.ov-sh::after{bottom:6px;right:8%;font-size:8px;animation-delay:1.5s}
+@keyframes spk{0%,100%{opacity:0;transform:scale(.5)}45%,55%{opacity:1;transform:scale(1)}}
+
+/* ── CARD BODY ── */
+.cbody{padding:10px 12px 12px}
+.cmeta{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+.cname{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;
+  line-height:1.3;margin-bottom:8px}
+
+/* ── COMBINED VALUE BLOCK (card) ── */
+.cvals{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.cval-box{background:var(--s3);border-radius:7px;padding:6px 8px}
+.cval-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;
+  font-weight:600;margin-bottom:2px}
+.cval-num{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;
+  color:var(--acc);letter-spacing:-.3px;line-height:1}
+.cval-box.exists .cval-num{color:var(--teal)}
+.cval-box.no-data .cval-num{color:var(--t3);font-size:11px}
+.spark-wrap{width:100%;height:22px;margin-top:4px}
+.no-spark{display:flex;align-items:center;gap:4px;margin-top:4px;font-size:9px;color:var(--t3)}
+
+/* ── LIST ROW ── */
+.row{background:var(--s1);border:1px solid var(--b1);border-radius:8px;
+  padding:8px 12px;display:flex;align-items:center;gap:9px;
+  cursor:pointer;transition:border-color .12s,background .12s;
+  contain:layout style;animation:fi .22s ease both}
+.row:hover{border-color:var(--b2);background:var(--s2)}
+.ri{width:34px;height:34px;border-radius:6px;overflow:hidden;
+  background:var(--s3);flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;position:relative}
+.ri .pi{width:86%;height:86%}
+.ri .pp{font-size:16px}
+.rcat{flex-shrink:0;width:68px}
+.rname{font-family:'Rajdhani',sans-serif;font-size:13.5px;font-weight:600;
+  flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rbdgs{display:flex;gap:3px;flex-shrink:0}
+
+/* Row value columns */
+.rval-wrap{display:flex;gap:12px;flex-shrink:0;align-items:center}
+.rval-col{text-align:right;min-width:78px}
+.rval-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.rval-num{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--acc)}
+.rval-col.exists .rval-num{color:var(--teal)}
+.rval-col.no-data .rval-num{color:var(--t3);font-size:10px}
+.rspark{flex-shrink:0;width:60px;height:20px}
+
+/* ── BADGES ── */
+.bdg{font-size:9px;font-family:'Space Mono',monospace;padding:1px 5px;
+  border-radius:4px;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+.b-gld{background:rgba(255,215,0,.13);color:#ffd700;border:1px solid rgba(255,215,0,.26)}
+.b-rb{background:rgba(180,100,255,.13);color:#cc88ff;border:1px solid rgba(180,100,255,.26)}
+.b-sh{background:rgba(255,255,255,.08);color:#d0e4ff;border:1px solid rgba(200,224,255,.18)}
+.b-tn{background:rgba(155,89,182,.12);color:#b07cc9;border:1px solid rgba(155,89,182,.2)}
+.ctag{font-size:9.5px;padding:2px 7px;border-radius:4px;font-weight:500;
+  letter-spacing:.4px;text-transform:uppercase;display:inline-flex;align-items:center}
+
+/* ── CAT COLOURS ── */
+.cc-Pet      {--cc:#e91e8c;background:rgba(233,30,140,.1);color:#e91e8c}
+.cc-Egg      {--cc:#f7b731;background:rgba(247,183,49,.12);color:#f7b731}
+.cc-Misc     {--cc:#4ecdc4;background:rgba(78,205,196,.1);color:#4ecdc4}
+.cc-Enchant  {--cc:#9b59b6;background:rgba(155,89,182,.12);color:#9b59b6}
+.cc-Potion   {--cc:#2ecc71;background:rgba(46,204,113,.1);color:#2ecc71}
+.cc-Lootbox  {--cc:#ff6b35;background:rgba(255,107,53,.12);color:#ff6b35}
+.cc-Hoverboard{--cc:#3498db;background:rgba(52,152,219,.1);color:#3498db}
+.cc-Fruit    {--cc:#e74c3c;background:rgba(231,76,60,.1);color:#e74c3c}
+.cc-def      {--cc:#828ba8;background:rgba(130,139,168,.1);color:#828ba8}
+
+/* ── PAGINATION ── */
+.pgbar{display:flex;align-items:center;justify-content:center;gap:5px;
+  margin-top:20px;flex-wrap:wrap;padding-bottom:24px}
+.pgbtn{background:var(--s2);border:1px solid var(--b1);border-radius:7px;
+  padding:6px 11px;font-size:12px;font-family:'Inter',sans-serif;color:var(--t2);
+  cursor:pointer;transition:all .15s;min-width:34px;text-align:center}
+.pgbtn:hover:not([disabled]){color:var(--txt);border-color:var(--b2)}
+.pgbtn.cur{background:var(--acc);border-color:var(--acc);color:#000;font-weight:600}
+.pgbtn[disabled]{opacity:.3;cursor:not-allowed}
+.pgbtn.ell{cursor:default;pointer-events:none;background:none;border-color:transparent}
+.pg-info{font-size:11px;color:var(--t3);padding:0 4px}
+
+/* ── MODAL ── */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:500;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(5px);animation:fi .18s ease}
+.mbg.gone{display:none}
+.mdl{background:var(--s1);border:1px solid var(--b2);border-radius:16px;
+  width:100%;max-width:680px;max-height:90vh;overflow-y:auto;
+  position:relative;animation:mslide .22s ease}
+@keyframes mslide{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+.mclose{position:absolute;top:12px;right:13px;background:var(--s3);
+  border:1px solid var(--b1);border-radius:6px;padding:3px 9px;
+  font-size:11px;color:var(--t2);cursor:pointer;transition:all .15s;
+  font-family:'Inter',sans-serif;z-index:10}
+.mclose:hover{color:var(--txt);border-color:var(--b2)}
+
+.mtop{display:flex;gap:15px;padding:18px 18px 14px;
+  border-bottom:1px solid var(--b1);align-items:flex-start}
+.mico{width:84px;height:84px;border-radius:12px;overflow:hidden;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
+.mico .pi{width:80%;height:80%;position:relative;z-index:2}
+.mico .pp{font-size:40px;z-index:2;position:relative}
+.minf{flex:1;min-width:0}
+.mnam{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;
+  line-height:1.2;margin-bottom:6px}
+.mbdgs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+
+/* Modal value summary row */
+.mvals{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mval-box{background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:10px 12px}
+.mval-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;
+  letter-spacing:.6px;font-weight:600;margin-bottom:3px}
+.mval-num{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--acc)}
+.mval-box.exists .mval-num{color:var(--teal)}
+.mval-box.no-data .mval-num{color:var(--t3);font-size:13px;font-weight:400}
+
+/* Modal charts */
+.mbdy{padding:16px 18px 18px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chart-panel{}
+.cht-ttl{font-size:10.5px;color:var(--t2);font-weight:600;text-transform:uppercase;
+  letter-spacing:.7px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.cht-ttl span{font-size:10px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0}
+.chwrap{height:180px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:10px}
+.noht{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:180px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;
+  gap:5px;color:var(--t3);font-size:11.5px;text-align:center;padding:16px}
+.noht .ni{font-size:26px;margin-bottom:3px}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:70px 20px;color:var(--t3)}
+.empty .ei{font-size:40px;margin-bottom:9px}
+.empty p{font-size:13px}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+
+@media(max-width:700px){
+  .charts-grid{grid-template-columns:1fr}
+  .mvals{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .hpills{display:none}
+  main{padding:14px}
+  .grid{grid-template-columns:1fr 1fr}
+  .rcat,.rspark{display:none}
+  .rval-wrap{gap:8px}
+  .rval-col{min-width:64px}
+}
+@media(max-width:400px){
+  .grid{grid-template-columns:1fr}
+  .cvals{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="ldr">
+  <div class="ld-logo">PS99<span>RAP</span></div>
+  <div class="ld-bar"><div class="ld-prog" id="ldp"></div></div>
+  <div class="ld-txt" id="ldm">Connecting…</div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="hdr">
+    <a class="logo" href="#">
+      <div class="logo-box">🐾</div>
+      <div class="logo-txt">PS99<b>RAP</b></div>
+    </a>
+    <div class="hpills">
+      <div class="pill"><span class="ldot"></span>Live</div>
+      <div class="pill" id="h-total">—</div>
+      <div class="pill" id="h-snaps">—</div>
+    </div>
+    <div id="hts"></div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Pet Simulator 99<br><em>Recent Average Prices</em></h1>
+    <p>RAP &amp; existence counts combined. Click any item to view its price history.</p>
+  </div>
+
+  <!-- Controls -->
+  <div class="ctrl">
+    <div class="sw">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input class="si" id="si" type="text" placeholder="Search name, variant…" autocomplete="off">
+    </div>
+    <div class="tg" id="vtab">
+      <button class="tb on" data-view="grid">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+          <rect x="0" y="0" width="7" height="7" rx="1.2"/><rect x="9" y="0" width="7" height="7" rx="1.2"/>
+          <rect x="0" y="9" width="7" height="7" rx="1.2"/><rect x="9" y="9" width="7" height="7" rx="1.2"/>
+        </svg>Grid
+      </button>
+      <button class="tb" data-view="list">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
+          <rect x="0" y="1" width="16" height="2.5" rx="1"/>
+          <rect x="0" y="6.5" width="16" height="2.5" rx="1"/>
+          <rect x="0" y="12" width="16" height="2.5" rx="1"/>
+        </svg>List
+      </button>
+    </div>
+  </div>
+
+  <!-- Category filters -->
+  <div class="cats" id="cats"></div>
+
+  <!-- Variant filters -->
+  <div class="vfilts">
+    <span class="vfilt-lbl">Variant:</span>
+    <button class="vb on"     data-v="all">All</button>
+    <button class="vb"        data-v="normal">Normal</button>
+    <button class="vb vb-gld" data-v="golden">✦ Golden</button>
+    <button class="vb vb-rb"  data-v="rainbow">🌈 Rainbow</button>
+    <button class="vb vb-sh"  data-v="shiny">✨ Shiny</button>
+  </div>
+
+  <!-- Sort -->
+  <div class="srt">
+    <span class="srt-lbl">Sort:</span>
+    <div class="srt-btns">
+      <button class="sb on" data-sort="rap-desc">RAP ↓</button>
+      <button class="sb"    data-sort="rap-asc">RAP ↑</button>
+      <button class="sb"    data-sort="exists-desc">Exists ↓</button>
+      <button class="sb"    data-sort="name-asc">A – Z</button>
+    </div>
+    <div class="rct" id="rct"></div>
+  </div>
+
+  <div id="con"></div>
+  <div class="pgbar" id="pgbar"></div>
+</main>
+
+<!-- Modal -->
+<div class="mbg gone" id="mbg">
+  <div class="mdl">
+    <button class="mclose" id="mclose">✕ Close</button>
+    <div class="mtop">
+      <div class="mico" id="mico"></div>
+      <div class="minf">
+        <div class="mnam"  id="mnam"></div>
+        <div class="mbdgs" id="mbdgs"></div>
+        <div class="mvals" id="mvals"></div>
+      </div>
+    </div>
+    <div class="mbdy">
+      <div class="charts-grid" id="mcharts"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   CONSTANTS
+═══════════════════════════════════════════ */
+const API_RAP    = 'https://ps99.biggamesapi.io/api/rap';
+const API_EXISTS = 'https://ps99.biggamesapi.io/api/exists';
+const API_PETS   = 'https://ps99.biggamesapi.io/api/collection/Pets';
+const BG_IMG     = 'https://ps99.biggamesapi.io/image/';
+const HK         = 'ps99rap_h_v5';
+const MAX_H      = 72;
+const MIN_INT    = 30 * 1000; // 30 seconds (testing) — change to 20 * 60 * 1000 for production
+const PER_PAGE   = 48;
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+const S = {
+  items: [],     // merged unified items [{key, category, configData, rap, exists}]
+  pets:  {},     // petName → {thumbId, goldenId}
+  hist:  [],     // [{ts, d:{key_rap:v, key_exists:v, ...}}]
+  view:'grid', sort:'rap-desc', cat:'All', variant:'all', q:'',
+  page: 1,
+  filtered: [],
+};
+
+/* ═══════════════════════════════════════════
+   LOADER
+═══════════════════════════════════════════ */
+function prog(p,m){
+  document.getElementById('ldp').style.width = p + '%';
+  if (m) document.getElementById('ldm').textContent = m;
+}
+
+/* ═══════════════════════════════════════════
+   MERGE RAP + EXISTS into unified items
+   Key: "category|id|pt|tn|sh"
+═══════════════════════════════════════════ */
+function mergeKey(d){
+  const c = d.configData;
+  return `${d.category}|${c.id}|${c.pt||0}|${c.tn||0}|${c.sh?1:0}`;
+}
+
+function mergeData(rapArr, existsArr){
+  const map = new Map();
+  for (const d of rapArr){
+    const k = mergeKey(d);
+    map.set(k, {key:k, category:d.category, configData:d.configData, rap:d.value, exists:null});
+  }
+  for (const d of existsArr){
+    const k = mergeKey(d);
+    if (map.has(k)){
+      map.get(k).exists = d.value;
+    } else {
+      map.set(k, {key:k, category:d.category, configData:d.configData, rap:null, exists:d.value});
+    }
+  }
+  return [...map.values()];
+}
+
+/* ═══════════════════════════════════════════
+   HISTORY / SNAPSHOT
+   History keys: "rap|<mergeKey>" and "ex|<mergeKey>"
+═══════════════════════════════════════════ */
+function snapshot(){
+  const last = S.hist[S.hist.length - 1];
+  if (last && Date.now() - last.ts < MIN_INT) return;
+  const snap = {ts: Date.now(), d: {}};
+  for (const item of S.items){
+    if (item.rap    != null) snap.d['r|' + item.key] = item.rap;
+    if (item.exists != null) snap.d['e|' + item.key] = item.exists;
+  }
+  S.hist.push(snap);
+  if (S.hist.length > MAX_H) S.hist = S.hist.slice(-MAX_H);
+  try { localStorage.setItem(HK, JSON.stringify(S.hist)); } catch(_){}
+  document.getElementById('h-snaps').textContent = S.hist.length + ' snapshots';
+}
+
+function hDataFor(prefix, key){
+  return S.hist
+    .map(s => ({ts: s.ts, v: s.d[prefix + key]}))
+    .filter(p => p.v !== undefined);
+}
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+function aid(rbx){ if (!rbx) return null; const m = rbx.match(/\d+/); return m ? m[0] : null; }
+
+function petImg(name, pt){
+  const p = S.pets[name]; if (!p) return null;
+  const id = (pt === 1 && p.goldenId) ? p.goldenId : p.thumbId;
+  return id ? BG_IMG + id : null;
+}
+
+function fmt(n){
+  if (n == null) return '—';
+  if (n >= 1e12) return (n/1e12).toFixed(2).replace(/\.?0+$/,'') + 'T';
+  if (n >= 1e9)  return (n/1e9).toFixed(2).replace(/\.?0+$/,'')  + 'B';
+  if (n >= 1e6)  return (n/1e6).toFixed(2).replace(/\.?0+$/,'')  + 'M';
+  if (n >= 1e3)  return (n/1e3).toFixed(1).replace(/\.?0+$/,'')  + 'K';
+  return n.toLocaleString();
+}
+function fdate(ts){
+  const d = new Date(ts);
+  return d.toLocaleDateString([], {month:'short', day:'numeric'}) + ' ' +
+         d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function vLabel(pt, sh){
+  const p = [];
+  if (pt===2) p.push('Rainbow'); else if (pt===1) p.push('Golden');
+  if (sh) p.push('Shiny');
+  return p.join(' ');
+}
+function vBadges(pt, sh, tn){
+  let h = '';
+  if (pt===2) h += '<span class="bdg b-rb">🌈 Rainbow</span>';
+  else if (pt===1) h += '<span class="bdg b-gld">✦ Golden</span>';
+  if (sh) h += '<span class="bdg b-sh">✨ Shiny</span>';
+  if (tn) h += `<span class="bdg b-tn">T${tn}</span>`;
+  return h;
+}
+function vOverlay(pt, sh){
+  let h = '';
+  if (pt===2) h += '<div class="ov-rb"></div>';
+  else if (pt===1) h += '<div class="ov-gld"></div>';
+  if (sh) h += '<div class="ov-sh"></div>';
+  return h;
+}
+function catCls(cat){
+  return {Pet:'cc-Pet',Egg:'cc-Egg',Misc:'cc-Misc',Enchant:'cc-Enchant',
+    Potion:'cc-Potion',Lootbox:'cc-Lootbox',Hoverboard:'cc-Hoverboard',
+    Fruit:'cc-Fruit'}[cat] || 'cc-def';
+}
+function cEmoji(cat){
+  return {Pet:'🐾',Egg:'🥚',Misc:'📦',Enchant:'✨',Potion:'🧪',
+    Lootbox:'🎁',Hoverboard:'🛹',Fruit:'🍎'}[cat] || '◆';
+}
+
+/* ═══════════════════════════════════════════
+   SPARKLINE
+═══════════════════════════════════════════ */
+function spark(pts, w=200, h=22){
+  if (!pts || pts.length < 2) return '';
+  const vs = pts.map(p=>p.v);
+  const mn = Math.min(...vs), mx = Math.max(...vs), rng = mx-mn||1;
+  const xs = vs.map((_,i) => (i/(vs.length-1))*w);
+  const ys = vs.map(v => h - ((v-mn)/rng)*(h-4) - 2);
+  const path = xs.map((x,i) => `${i===0?'M':'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+  const up = vs[vs.length-1] >= vs[0];
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <path d="${path}" fill="none" stroke="${up?'#2ecc71':'#e74c3c'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+/* ═══════════════════════════════════════════
+   FILTER + SORT
+═══════════════════════════════════════════ */
+function recompute(){
+  let d = S.items;
+  if (S.cat !== 'All')       d = d.filter(x => x.category === S.cat);
+  if (S.variant === 'golden')  d = d.filter(x => x.configData.pt === 1);
+  else if (S.variant === 'rainbow') d = d.filter(x => x.configData.pt === 2);
+  else if (S.variant === 'shiny')   d = d.filter(x => !!x.configData.sh);
+  else if (S.variant === 'normal')  d = d.filter(x => !x.configData.pt && !x.configData.sh);
+  if (S.q){
+    const q = S.q.toLowerCase();
+    d = d.filter(x => {
+      const cd = x.configData;
+      return cd.id.toLowerCase().includes(q)
+          || x.category.toLowerCase().includes(q)
+          || vLabel(cd.pt, cd.sh).toLowerCase().includes(q);
+    });
+  }
+  if      (S.sort === 'rap-desc')    d = [...d].sort((a,b) => (b.rap||0) - (a.rap||0));
+  else if (S.sort === 'rap-asc')     d = [...d].sort((a,b) => (a.rap||0) - (b.rap||0));
+  else if (S.sort === 'exists-desc') d = [...d].sort((a,b) => (b.exists||0) - (a.exists||0));
+  else d = [...d].sort((a,b) => a.configData.id.localeCompare(b.configData.id));
+  S.filtered = d;
+  S.page = 1;
+}
+
+/* ═══════════════════════════════════════════
+   RENDER CATEGORY FILTERS
+═══════════════════════════════════════════ */
+function renderCats(){
+  const counts = {};
+  S.items.forEach(d => counts[d.category] = (counts[d.category]||0) + 1);
+  const list = ['All', ...Object.keys(counts).sort((a,b) => counts[b]-counts[a])];
+  document.getElementById('cats').innerHTML = list.map(c => `
+    <button class="cb${c===S.cat?' on':''}" data-cat="${esc(c)}">
+      ${esc(c)}${c!=='All'?`<span class="cn">${counts[c]}</span>`:''}
+    </button>`).join('');
+  document.getElementById('cats').querySelectorAll('.cb').forEach(b =>
+    b.addEventListener('click', () => { S.cat = b.dataset.cat; recompute(); renderItems(); }));
+}
+
+/* ═══════════════════════════════════════════
+   ICON HTML
+═══════════════════════════════════════════ */
+function iconHtml(item, cls){
+  const cd = item.configData;
+  const isPet = item.category === 'Pet';
+  const url = isPet ? petImg(cd.id, cd.pt) : null;
+  if (isPet && url)
+    return `<img class="${cls}" src="${url}" loading="lazy">${vOverlay(cd.pt, cd.sh)}`;
+  return `<span class="pp">${cEmoji(item.category)}</span>${vOverlay(cd.pt, cd.sh)}`;
+}
+
+/* ═══════════════════════════════════════════
+   CARD
+═══════════════════════════════════════════ */
+function mkCard(item, i){
+  const cd = item.configData;
+  const c  = catCls(item.category);
+  const isPet = item.category === 'Pet';
+  const vl = vLabel(cd.pt, cd.sh);
+  const rapPts = hDataFor('r|', item.key);
+  const sp = spark(rapPts, 196, 22);
+
+  return `<div class="card ${c}" style="animation-delay:${Math.min(i,30)*8}ms" data-idx="${i}">
+    ${isPet ? `<div class="iw">${iconHtml(item,'pi')}</div>` : ''}
+    <div class="cbody">
+      <div class="cmeta">
+        <span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt, cd.sh, cd.tn)}
+      </div>
+      <div class="cname">${esc(cd.id)}${vl?` <small style="color:var(--t3);font-weight:400">${esc(vl)}</small>`:''}</div>
+      <div class="cvals">
+        <div class="cval-box${item.rap==null?' no-data':''}">
+          <div class="cval-lbl">RAP</div>
+          <div class="cval-num">${fmt(item.rap)}</div>
+        </div>
+        <div class="cval-box exists${item.exists==null?' no-data':''}">
+          <div class="cval-lbl">Exists</div>
+          <div class="cval-num">${fmt(item.exists)}</div>
+        </div>
+      </div>
+      ${sp
+        ? `<div class="spark-wrap">${sp}</div>`
+        : `<div class="no-spark">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>Recording history…</div>`}
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   ROW
+═══════════════════════════════════════════ */
+function mkRow(item, i){
+  const cd = item.configData;
+  const c  = catCls(item.category);
+  const vl = vLabel(cd.pt, cd.sh);
+  const rapPts = hDataFor('r|', item.key);
+  const sp = spark(rapPts, 60, 20);
+
+  return `<div class="row" style="animation-delay:${Math.min(i,30)*5}ms" data-idx="${i}">
+    <div class="ri">${iconHtml(item,'pi')}</div>
+    <div class="rcat"><span class="ctag ${c}">${esc(item.category)}</span></div>
+    <div class="rname">${esc(cd.id)}${vl?` <span style="color:var(--t3);font-size:11px">${esc(vl)}</span>`:''}</div>
+    <div class="rbdgs">${vBadges(cd.pt, cd.sh, cd.tn)}</div>
+    <div class="rspark">${sp}</div>
+    <div class="rval-wrap">
+      <div class="rval-col${item.rap==null?' no-data':''}">
+        <div class="rval-lbl">RAP</div>
+        <div class="rval-num">${fmt(item.rap)}</div>
+      </div>
+      <div class="rval-col exists${item.exists==null?' no-data':''}">
+        <div class="rval-lbl">Exists</div>
+        <div class="rval-num">${fmt(item.exists)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   RENDER ITEMS
+═══════════════════════════════════════════ */
+function renderItems(){
+  const data = S.filtered;
+  const con  = document.getElementById('con');
+  document.getElementById('rct').textContent = data.length.toLocaleString() + ' items';
+
+  if (!data.length){
+    con.className = '';
+    con.innerHTML = `<div class="empty"><div class="ei">🔍</div><p>No items match your filters.</p></div>`;
+    renderPagination();
+    return;
+  }
+
+  const start = (S.page - 1) * PER_PAGE;
+  const slice = data.slice(start, start + PER_PAGE);
+
+  if (S.view === 'grid'){
+    con.className = 'grid';
+    con.innerHTML = slice.map((d,i) => mkCard(d,i)).join('');
+  } else {
+    con.className = 'listv';
+    con.innerHTML = slice.map((d,i) => mkRow(d,i)).join('');
+  }
+
+  con.querySelectorAll('[data-idx]').forEach(el =>
+    el.addEventListener('click', () => openModal(data[start + parseInt(el.dataset.idx)])));
+
+  renderPagination();
+}
+
+/* ═══════════════════════════════════════════
+   PAGINATION
+═══════════════════════════════════════════ */
+function renderPagination(){
+  const total = S.filtered.length;
+  const pages = Math.ceil(total / PER_PAGE);
+  const bar = document.getElementById('pgbar');
+  if (pages <= 1){ bar.innerHTML = ''; return; }
+
+  const cur = S.page;
+  const btns = [];
+  btns.push(`<button class="pgbtn" data-p="${cur-1}" ${cur===1?'disabled':''}>‹</button>`);
+
+  const show = new Set([1, pages, cur, cur-1, cur+1, cur-2, cur+2].filter(p => p>=1 && p<=pages));
+  const sorted = [...show].sort((a,b) => a-b);
+  let prev = 0;
+  for (const p of sorted){
+    if (prev && p - prev > 1) btns.push(`<button class="pgbtn ell">…</button>`);
+    btns.push(`<button class="pgbtn${p===cur?' cur':''}" data-p="${p}">${p}</button>`);
+    prev = p;
+  }
+  btns.push(`<button class="pgbtn" data-p="${cur+1}" ${cur===pages?'disabled':''}>›</button>`);
+  btns.push(`<span class="pg-info">Page ${cur} of ${pages}</span>`);
+
+  bar.innerHTML = btns.join('');
+  bar.querySelectorAll('[data-p]').forEach(b => {
+    b.addEventListener('click', () => {
+      S.page = parseInt(b.dataset.p);
+      renderItems();
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+const charts = {};
+function destroyCharts(){ Object.keys(charts).forEach(k => { charts[k].destroy(); delete charts[k]; }); }
+
+function buildChart(canvasId, pts, color, labelFn){
+  if (!pts || pts.length < 2) return false;
+  const vals = pts.map(p => p.v);
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, 0, 160);
+  g.addColorStop(0, color + '30');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  charts[canvasId] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: pts.map(p => fdate(p.ts)),
+      datasets: [{
+        data: vals, borderColor: color, backgroundColor: g,
+        borderWidth: 2, pointRadius: pts.length > 25 ? 0 : 3,
+        pointHoverRadius: 4, pointBackgroundColor: color,
+        fill: true, tension: .35,
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{intersect:false, mode:'index'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1b1e28', borderColor:'#2a3050', borderWidth:1,
+          titleColor:'#828ba8', bodyColor: color,
+          bodyFont:{family:'Space Mono', size:11},
+          callbacks:{label: c => ' ' + labelFn(c.raw)}
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#474f68',font:{size:9},maxTicksLimit:5,maxRotation:0},
+           grid:{color:'rgba(255,255,255,.03)'}},
+        y:{ticks:{color:'#474f68',font:{family:'Space Mono',size:9},callback:v=>fmt(v)},
+           grid:{color:'rgba(255,255,255,.03)'},min:mn*.97,max:mx*1.03}
+      }
+    }
+  });
+  return true;
+}
+
+function chartPanel(prefix, key, label, color, canvasId){
+  const pts = hDataFor(prefix, key);
+  if (pts.length < 2){
+    return `<div class="chart-panel">
+      <div class="cht-ttl">${label}</div>
+      <div class="noht"><div class="ni">📈</div>
+        <p>${pts.length===0?'No history yet.':'Only 1 data point recorded.'}</p></div>
+    </div>`;
+  }
+  const vals = pts.map(p=>p.v);
+  const chg = vals[vals.length-1] - vals[0];
+  const pct = ((chg/vals[0])*100).toFixed(1);
+  return `<div class="chart-panel">
+    <div class="cht-ttl">${label} <span>${pts.length} pts · ${chg>=0?'+':''}${pct}%</span></div>
+    <div class="chwrap"><canvas id="${canvasId}"></canvas></div>
+  </div>`;
+}
+
+function openModal(item){
+  const cd = item.configData;
+  const c  = catCls(item.category);
+  const isPet = item.category === 'Pet';
+  const url = isPet ? petImg(cd.id, cd.pt) : null;
+  const vl = vLabel(cd.pt, cd.sh);
+
+  // Icon
+  const mico = document.getElementById('mico');
+  mico.className = `mico ${c}`;
+  if (isPet && url){
+    mico.innerHTML = `<img class="pi" src="${url}">${vOverlay(cd.pt, cd.sh)}`;
+  } else {
+    mico.innerHTML = `<span class="pp">${cEmoji(item.category)}</span>${vOverlay(cd.pt, cd.sh)}`;
+  }
+
+  document.getElementById('mnam').textContent = cd.id + (vl ? ` (${vl})` : '');
+  document.getElementById('mbdgs').innerHTML  = `<span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt, cd.sh, cd.tn)}`;
+
+  // Value summary
+  document.getElementById('mvals').innerHTML = `
+    <div class="mval-box${item.rap==null?' no-data':''}">
+      <div class="mval-lbl">Recent Avg Price</div>
+      <div class="mval-num">${fmt(item.rap)}</div>
+    </div>
+    <div class="mval-box exists${item.exists==null?' no-data':''}">
+      <div class="mval-lbl">In Existence</div>
+      <div class="mval-num">${fmt(item.exists)}</div>
+    </div>`;
+
+  // Charts — build HTML first, then mount Chart.js after DOM insert
+  destroyCharts();
+  document.getElementById('mcharts').innerHTML =
+    chartPanel('r|', item.key, 'RAP History',    '#f7b731', 'ch-rap') +
+    chartPanel('e|', item.key, 'Exists History',  '#4ecdc4', 'ch-ex');
+
+  // Mount charts after HTML is in DOM
+  buildChart('ch-rap', hDataFor('r|', item.key), '#f7b731', v => fmt(v));
+  buildChart('ch-ex',  hDataFor('e|', item.key), '#4ecdc4', v => fmt(v));
+
+  document.getElementById('mbg').classList.remove('gone');
+}
+
+function closeModal(){
+  document.getElementById('mbg').classList.add('gone');
+  destroyCharts();
+}
+document.getElementById('mclose').addEventListener('click', closeModal);
+document.getElementById('mbg').addEventListener('click', e => { if (e.target.id === 'mbg') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ═══════════════════════════════════════════
+   EVENT WIRING
+═══════════════════════════════════════════ */
+let searchTimer;
+document.getElementById('si').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { S.q = e.target.value.trim(); recompute(); renderItems(); }, 120);
+});
+
+document.getElementById('vtab').querySelectorAll('.tb').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#vtab .tb').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); S.view = b.dataset.view; renderItems();
+}));
+
+document.querySelectorAll('.sb').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.sb').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); S.sort = b.dataset.sort; recompute(); renderItems();
+}));
+
+document.querySelectorAll('.vb').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.vb').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); S.variant = b.dataset.v; recompute(); renderItems();
+}));
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+async function init(){
+  try { S.hist = JSON.parse(localStorage.getItem(HK) || '[]'); } catch(_){}
+  prog(8, 'Fetching market data…');
+
+  const [rr, er, pr] = await Promise.all([
+    fetch(API_RAP).then(r=>r.json()),
+    fetch(API_EXISTS).then(r=>r.json()),
+    fetch(API_PETS).then(r=>r.json()),
+  ]);
+
+  prog(55, 'Merging datasets…');
+  S.items = mergeData(rr.data||[], er.data||[]);
+
+  // Build pet icon map
+  for (const p of (pr.data||[])){
+    const cd = p.configData;
+    S.pets[p.configName] = {thumbId: aid(cd.thumbnail), goldenId: aid(cd.goldenThumbnail)};
+  }
+
+  prog(85, 'Saving snapshot…');
+  snapshot();
+
+  const rapCt    = (rr.data||[]).length;
+  const existsCt = (er.data||[]).length;
+  document.getElementById('h-total').textContent  = S.items.length.toLocaleString() + ' items';
+  document.getElementById('h-snaps').textContent  = S.hist.length + ' snapshots';
+  document.getElementById('hts').textContent      = 'Updated ' + new Date().toLocaleTimeString();
+
+  prog(100);
+  setTimeout(() => document.getElementById('ldr').classList.add('gone'), 280);
+  recompute();
+  renderCats();
+  renderItems();
+}
+
+init().catch(err => {
+  document.getElementById('ldr').innerHTML = `
+    <div style="text-align:center;font-family:Rajdhani,sans-serif">
+      <div style="font-size:22px;color:#e74c3c;margin-bottom:8px">Failed to load</div>
+      <div style="font-size:12px;color:#474f68">${err.message}</div>
+    </div>`;
+});
+
+// ── AUTO-REFRESH ──
+// Re-fetches live data on the MIN_INT cadence and saves a snapshot each time.
+// Keeps the view live without requiring a page reload.
+async function refresh(){
+  try {
+    const [rr, er] = await Promise.all([
+      fetch(API_RAP).then(r=>r.json()),
+      fetch(API_EXISTS).then(r=>r.json()),
+    ]);
+    S.items = mergeData(rr.data||[], er.data||[]);
+    snapshot();
+    document.getElementById('hts').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    document.getElementById('h-total').textContent = S.items.length.toLocaleString() + ' items';
+    recompute();
+    renderItems();
+  } catch(_) { /* silent — keep existing data on network error */ }
+}
+setInterval(refresh, MIN_INT);
+</script>
+</body>
+</html>
