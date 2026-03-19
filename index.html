@@ -146,7 +146,6 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
 .card-pcts{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:4px}
 .spark-wrap{width:100%;height:22px;margin-top:3px}
 .no-spark{display:flex;align-items:center;gap:4px;margin-top:4px;font-size:9px;color:var(--t3)}
-.card-desc{font-size:9.5px;color:var(--t3);font-style:italic;margin-bottom:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 /* ── LIST ROW ── */
 .row{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:7px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:border-color .12s,background .12s;contain:layout style;animation:fi .22s ease both}
@@ -329,7 +328,6 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
 .mstat-val{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--acc);line-height:1}
 .mstat.exists .mstat-val{color:var(--teal)}.mstat.mcap .mstat-val{color:#9b8fe8}
 .mstat.no-data .mstat-val{color:var(--t3);font-size:11px;font-weight:400}
-.mdesc{font-size:11.5px;color:var(--t2);margin-bottom:9px;line-height:1.5;font-style:italic;padding:7px 10px;background:var(--s2);border-radius:6px;border-left:2px solid var(--b2)}
 .mbdy{padding:14px 18px 18px}
 .mchg-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
 .mchg{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:7px 10px;text-align:center}
@@ -589,7 +587,6 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
     </div>
     <div id="diam-huge-body"></div>
   </div>
-  <div class="pgbar" id="hd-pgbar"></div>
 </div>
 
 </main>
@@ -603,7 +600,6 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
       <div class="minf">
         <div class="mnam"  id="mnam"></div>
         <div class="mbdgs" id="mbdgs"></div>
-        <div class="mdesc" id="mdesc" style="display:none"></div>
         <div class="mstats" id="mstats"></div>
       </div>
     </div>
@@ -825,7 +821,6 @@ function mkCard(item,i){
     <div class="cbody">
       <div class="cmeta"><span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt,cd.sh,cd.tn)}</div>
       <div class="cname">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
-      ${(()=>{const _d=item.category==='Pet'?S.pets[cd.id]?.desc:'';return _d?`<div class="card-desc">${esc(_d)}</div>`:''})()}
       <div class="cvals">
         <div class="cval-box${item.rap==null?' no-data':''}"><div class="cval-lbl">RAP</div><div class="cval-num">${fmt(item.rap)}</div></div>
         <div class="cval-box exists${item.exists==null?' no-data':''}"><div class="cval-lbl">Supply</div><div class="cval-num">${fmt(item.exists)}</div></div>
@@ -844,10 +839,7 @@ function mkRow(item,i){
   return `<div class="row" style="animation-delay:${Math.min(i,30)*5}ms" data-idx="${i}">
     <div class="ri">${iconHtml(item,'pi')}</div>
     <div class="rcat"><span class="ctag ${c}">${esc(item.category)}</span></div>
-    <div class="rname" style="display:flex;flex-direction:column;gap:1px">
-      <span>${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</span>
-      ${(()=>{const _d=item.category==='Pet'?S.pets[cd.id]?.desc:'';return _d?`<span style="font-size:9.5px;color:var(--t3);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(_d)}</span>`:''})()}
-    </div>
+    <div class="rname">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
     <div class="rbdgs">${vBadges(cd.pt,cd.sh,cd.tn)}</div>
     <div class="rspark">${sp}</div>
     <div class="rcol${item.rap==null?' no-data':''}"><span class="rcol-lbl">RAP</span><span class="rcol-val">${fmt(item.rap)}</span><div class="rcol-pcts">${pctChip(p24,'24h')}${pctChip(p7d,'7d')}</div></div>
@@ -1181,10 +1173,6 @@ function openModal(item){
   mico.innerHTML=isPet&&url?`<img class="pi" src="${url}">${vOverlay(cd.pt,cd.sh)}`:`<span class="pp">${cEmoji(item.category)}</span>${vOverlay(cd.pt,cd.sh)}`;
   document.getElementById('mnam').innerHTML=esc(cd.id)+(vl?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:'');
   document.getElementById('mbdgs').innerHTML=`<span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt,cd.sh,cd.tn)}`;
-  const _petDesc = item.category==='Pet' ? (S.pets[cd.id]?.desc||'') : '';
-  const _descEl  = document.getElementById('mdesc');
-  _descEl.textContent  = _petDesc;
-  _descEl.style.display = _petDesc ? 'block' : 'none';
   document.getElementById('mstats').innerHTML=`
     <div class="mstat${item.rap==null?' no-data':''}"><div class="mstat-lbl">RAP</div><div class="mstat-val">${fmt(item.rap)}</div></div>
     <div class="mstat exists${item.exists==null?' no-data':''}"><div class="mstat-lbl">In Existence</div><div class="mstat-val">${fmt(item.exists)}</div></div>
@@ -1250,15 +1238,12 @@ document.querySelectorAll('[data-shiny]').forEach(b=>b.addEventListener('click',
 
 // Diamonds huge sort
 let hdSort = 'rap-desc';
-let hdPage = 1;
-const HD_PER_PAGE = 48;
 document.getElementById('hd-sort-btns').addEventListener('click', e => {
   const b = e.target.closest('[data-hdsort]');
   if (!b) return;
   document.querySelectorAll('[data-hdsort]').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
   hdSort = b.dataset.hdsort;
-  hdPage = 1;
   renderDiamondsHugeTable();
 });
 
@@ -1289,7 +1274,7 @@ async function init(){
   S.items=mergeData(latestRes.rap||[],latestRes.exists||[]);
   for(const p of (pr.data||[])){
     const cd=p.configData;
-    S.pets[p.configName]={thumbId:aid(cd.thumbnail),goldenId:aid(cd.goldenThumbnail),desc:cd.indexDesc||''};
+    S.pets[p.configName]={thumbId:aid(cd.thumbnail),goldenId:aid(cd.goldenThumbnail)};
   }
   prog(75,'Loading price history…');
   await loadHistory();
@@ -1393,13 +1378,6 @@ function renderDiamondStats() {
   const mostExpensive = huges.length
     ? huges.reduce((a, b) => a.rap > b.rap ? a : b)
     : null;
-  const titanics = S.items.filter(x =>
-    x.category === 'Pet' &&
-    x.configData.id.toLowerCase().includes('titanic') &&
-    !x.configData.pt && !x.configData.sh && x.rap != null
-  );
-  const cheapestTitanic  = titanics.length ? titanics.reduce((a,b) => a.rap < b.rap ? a : b) : null;
-  const expensiveTitanic = titanics.length ? titanics.reduce((a,b) => a.rap > b.rap ? a : b) : null;
 
   // 24h supply change
   const snap24 = closestSnap(24);
@@ -1435,17 +1413,7 @@ function renderDiamondStats() {
       <div class="dhc-lbl">Most Expensive Huge</div>
       <div class="dhc-val">${mostExpensive ? fmt(mostExpensive.rap) : '—'}</div>
       <div class="dhc-sub">${mostExpensive ? mostExpensive.configData.id : ''}</div>
-    </div>
-    <div class="diam-hero-card">
-      <div class="dhc-lbl">Cheapest Titanic</div>
-      <div class="dhc-val" style="color:#4ecdc4">${cheapestTitanic ? fmt(cheapestTitanic.rap) : '—'}</div>
-      <div class="dhc-sub">${cheapestTitanic ? cheapestTitanic.configData.id : 'None tracked'}</div>
-    </div>
-    <div class="diam-hero-card">
-      <div class="dhc-lbl">Most Expensive Titanic</div>
-      <div class="dhc-val" style="color:#4ecdc4">${expensiveTitanic ? fmt(expensiveTitanic.rap) : '—'}</div>
-      <div class="dhc-sub">${expensiveTitanic ? expensiveTitanic.configData.id : ''}</div>
-    </div>\`;
+    </div>`;
 }
 
 // ── Charts ──────────────────────────────────────────────────────────────────
@@ -1530,7 +1498,7 @@ function renderDiamondCharts() {
 function renderDiamondsHugeTable() {
   let huges = S.items.filter(x =>
     x.category === 'Pet' &&
-    (x.configData.id.toLowerCase().includes('huge') || x.configData.id.toLowerCase().includes('titanic')) &&
+    x.configData.id.toLowerCase().includes('huge') &&
     x.rap != null
   );
 
@@ -1541,36 +1509,7 @@ function renderDiamondsHugeTable() {
   else if (hdSort === 'chg24-desc')  huges = huges.sort((a,b) => CHG24(b) - CHG24(a));
   else                               huges = huges.sort((a,b) => a.configData.id.localeCompare(b.configData.id));
 
-  const hdTotal = huges.length;
-  const hdPages = Math.ceil(hdTotal / HD_PER_PAGE);
-  if (hdPage > hdPages) hdPage = Math.max(1, hdPages);
-  const hdStart = (hdPage - 1) * HD_PER_PAGE;
-  const hdSlice = huges.slice(hdStart, hdStart + HD_PER_PAGE);
-
-  const bar = document.getElementById('hd-pgbar');
-  if (hdPages <= 1) {
-    bar.innerHTML = '';
-  } else {
-    const cur = hdPage, btns = [];
-    btns.push(`<button class="pgbtn" data-hdp="${cur-1}" ${cur===1?'disabled':''}>&#8249;</button>`);
-    const show = new Set([1,hdPages,cur,cur-1,cur+1,cur-2,cur+2].filter(p=>p>=1&&p<=hdPages));
-    let prev=0;
-    for (const p of [...show].sort((a,b)=>a-b)) {
-      if (prev && p-prev>1) btns.push('<button class="pgbtn ell">…</button>');
-      btns.push(`<button class="pgbtn${p===cur?' cur':''}" data-hdp="${p}">${p}</button>`);
-      prev=p;
-    }
-    btns.push(`<button class="pgbtn" data-hdp="${cur+1}" ${cur===hdPages?'disabled':''}>&#8250;</button>`);
-    btns.push(`<span class="pg-info">Page ${cur} of ${hdPages} · ${hdTotal} items</span>`);
-    bar.innerHTML = btns.join('');
-    bar.querySelectorAll('[data-hdp]').forEach(b => b.addEventListener('click', () => {
-      hdPage = parseInt(b.dataset.hdp);
-      renderDiamondsHugeTable();
-      document.getElementById('page-diamonds').scrollIntoView({behavior:'smooth'});
-    }));
-  }
-
-  document.getElementById('diam-huge-body').innerHTML = hdSlice.map(item => {
+  document.getElementById('diam-huge-body').innerHTML = huges.map(item => {
     const cd  = item.configData;
     const url = petImg(cd.id, cd.pt);
     const vl  = vLabel(cd.pt, cd.sh);
