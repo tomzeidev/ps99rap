@@ -423,7 +423,9 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
     </div>
     <div class="vfilt-row">
       <span class="vfilt-lbl">Shiny:</span>
-      <button class="vb" id="shiny-toggle" data-shiny="off">✨ Shiny Only</button>
+      <button class="vb on" data-shiny="all">All</button>
+      <button class="vb vb-sh" data-shiny="shiny">✨ Shiny Only</button>
+      <button class="vb" data-shiny="no-shiny">✗ No Shiny</button>
     </div>
   </div>
   <div class="srt">
@@ -453,10 +455,11 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
   <div class="hatch-header">
     <div class="window-sel">
       <span class="window-lbl">Window:</span>
-      <button class="wb on" data-w="60">1 min</button>
-      <button class="wb"    data-w="300">5 min</button>
+      <button class="wb on" data-w="300">5 min</button>
       <button class="wb"    data-w="900">15 min</button>
       <button class="wb"    data-w="3600">1 hr</button>
+      <button class="wb"    data-w="21600">6 hr</button>
+      <button class="wb"    data-w="86400">24 hr</button>
     </div>
     <div class="type-sel">
       <span class="type-lbl">Show:</span>
@@ -465,7 +468,7 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
       <button class="wb"    data-htype="titanic">Titanic only</button>
     </div>
     <div class="hatch-status">
-      <div id="hatch-live-ind" class="hatch-waiting">⏳ Warming up…</div>
+      <div id="hatch-live-ind" class="hatch-waiting">⏳ Loading…</div>
       <div class="hatch-ts" id="hatch-ts"></div>
     </div>
   </div>
@@ -519,12 +522,11 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
    CONSTANTS
 ══════════════════════════════════════════ */
 const API_PETS    = 'https://ps99.biggamesapi.io/api/collection/Pets';
-const API_EXISTS  = 'https://ps99.biggamesapi.io/api/exists';  // polled directly for hatch feed
+const API_EXISTS  = 'https://ps99.biggamesapi.io/api/exists'; // used only by worker
 const BG_IMG      = 'https://ps99.biggamesapi.io/image/';
 const PER_PAGE    = 48;
 const REFRESH_MS  = 5 * 60 * 1000;
-const HATCH_MS    = 30 * 1000;            // poll exists every 30s for hatch feed
-const HATCH_MEM   = 90 * 60 * 1000;      // keep 90 min of hatch history in memory
+const HATCH_MS    = 5 * 60 * 1000;        // re-fetch hatch data from worker every 5 min
 const WORKER_URL  = 'https://ps99rap-worker.thomasmerta.workers.dev';
 
 /* ══════════════════════════════════════════
@@ -534,15 +536,16 @@ const S = {
   items:[], pets:{}, hist:[],
   view:'grid', sort:'rap-desc', cat:'All',
   variantType:'all',  // all | normal | golden | rainbow
-  shinyOnly:false,    // true = only show shiny items
+  shinyFilter:'all',  // 'all' | 'shiny' | 'no-shiny'
   q:'', page:1, filtered:[],
 };
 
 // Hatch feed state
 const H = {
-  snapshots: [],          // [{ts, pets:{key:{id,pt,sh,exists}}}]
-  windowSec: 60,
-  htype: 'both',          // both | huge | titanic
+  snapshots: [],  // [{ts, d:{mergeKey: exists}}] from worker hatch-buffer
+  petMeta:   {},  // mergeKey → {id, pt, tn, sh}
+  windowSec: 300, // default 5 min (data is at 5-min intervals)
+  htype:     'both',
   rateChart: null,
 };
 
@@ -623,6 +626,13 @@ function vLabel(pt,sh){
   const p=[]; if(pt===2)p.push('Rainbow');else if(pt===1)p.push('Golden');
   if(sh)p.push('Shiny'); return p.join(' ');
 }
+function vLabelHtml(pt, sh) {
+  const parts = [];
+  if(pt===2) parts.push('<span style="color:#cc88ff;font-weight:600">Rainbow</span>');
+  else if(pt===1) parts.push('<span style="color:#ffd700;font-weight:600">Golden</span>');
+  if(sh) parts.push('<span style="color:#d0e4ff;font-weight:600">Shiny</span>');
+  return parts.join(' ');
+}
 function vBadges(pt,sh,tn){
   let h='';
   if(pt===2)h+='<span class="bdg b-rb">🌈 Rainbow</span>';
@@ -662,8 +672,9 @@ function recompute(){
   else if(S.variantType==='golden')  d=d.filter(x=>x.configData.pt===1);
   else if(S.variantType==='rainbow') d=d.filter(x=>x.configData.pt===2);
 
-  // Shiny filter (independent boolean layer)
-  if(S.shinyOnly) d=d.filter(x=>!!x.configData.sh);
+  // Shiny filter (independent layer)
+  if(S.shinyFilter==='shiny') d=d.filter(x=>!!x.configData.sh);
+  else if(S.shinyFilter==='no-shiny') d=d.filter(x=>!x.configData.sh);
 
   if(S.q){ const q=S.q.toLowerCase(); d=d.filter(x=>x.configData.id.toLowerCase().includes(q)||x.category.toLowerCase().includes(q)||vLabel(x.configData.pt,x.configData.sh).toLowerCase().includes(q)); }
 
@@ -716,7 +727,7 @@ function mkCard(item,i){
     ${item.category==='Pet'?`<div class="iw">${iconHtml(item,'pi')}</div>`:''}
     <div class="cbody">
       <div class="cmeta"><span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt,cd.sh,cd.tn)}</div>
-      <div class="cname">${esc(cd.id)}${vl?` <small style="color:var(--t3);font-weight:400">${esc(vl)}</small>`:''}</div>
+      <div class="cname">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
       <div class="cvals">
         <div class="cval-box${item.rap==null?' no-data':''}"><div class="cval-lbl">RAP</div><div class="cval-num">${fmt(item.rap)}</div></div>
         <div class="cval-box exists${item.exists==null?' no-data':''}"><div class="cval-lbl">Supply</div><div class="cval-num">${fmt(item.exists)}</div></div>
@@ -735,7 +746,7 @@ function mkRow(item,i){
   return `<div class="row" style="animation-delay:${Math.min(i,30)*5}ms" data-idx="${i}">
     <div class="ri">${iconHtml(item,'pi')}</div>
     <div class="rcat"><span class="ctag ${c}">${esc(item.category)}</span></div>
-    <div class="rname">${esc(cd.id)}${vl?` <span style="color:var(--t3);font-size:11px">${esc(vl)}</span>`:''}</div>
+    <div class="rname">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
     <div class="rbdgs">${vBadges(cd.pt,cd.sh,cd.tn)}</div>
     <div class="rspark">${sp}</div>
     <div class="rcol${item.rap==null?' no-data':''}"><span class="rcol-lbl">RAP</span><span class="rcol-val">${fmt(item.rap)}</span><div class="rcol-pcts">${pctChip(p24,'24h')}${pctChip(p7d,'7d')}</div></div>
@@ -772,206 +783,180 @@ function renderPagination(){
   bar.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{ S.page=parseInt(b.dataset.p); renderItems(); window.scrollTo({top:0,behavior:'smooth'}); }));
 }
 
-/* ══════════════════════════════════════════════════════
-   HATCH FEED
-══════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════
+   HATCH FEED — server-side data from worker /hatch-history
+   5-minute granularity. Shared across all visitors. Persists on refresh.
+════════════════════════════════════════════════════════ */
 
-// Classify a pet name
-function hatchType(name){
-  const n=name.toLowerCase();
-  if(n.includes('titanic')) return 'titanic';
-  if(n.includes('huge')) return 'huge';
-  return null;
-}
-
-// Merge key for hatch feed items (simpler — just name+variant)
-function hatchKey(d){ const c=d.configData; return `${c.id}|${c.pt||0}|${c.sh?1:0}`; }
-
-// Poll exists API, push snapshot into H.snapshots
-async function pollHatches(){
-  try{
-    const res=await fetch(API_EXISTS);
-    const json=await res.json();
-    const ts=Date.now();
-    const pets={};
-    for(const d of (json.data||[])){
-      if(d.category!=='Pet') continue;
-      const type=hatchType(d.configData.id);
-      if(!type) continue;
-      const k=hatchKey(d);
-      pets[k]={id:d.configData.id, pt:d.configData.pt||0, sh:!!d.configData.sh, exists:d.value, type};
+async function loadHatchHistory() {
+  try {
+    const res = await fetch(WORKER_URL + '/hatch-history');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    H.snapshots = json.snapshots || [];
+    H.petMeta   = json.petMeta   || {};
+    const ind = document.getElementById('hatch-live-ind');
+    if (H.snapshots.length > 0) {
+      ind.className = 'hatch-live';
+      ind.innerHTML = '<span class="ldot"></span> ' + H.snapshots.length + ' snapshots';
+    } else {
+      ind.className = 'hatch-waiting';
+      ind.innerHTML = '⏳ No data yet — worker cron hasn't run';
     }
-    H.snapshots.push({ts,pets});
-    // Trim old snapshots
-    const cutoff=ts-HATCH_MEM;
-    H.snapshots=H.snapshots.filter(s=>s.ts>=cutoff);
-
-    // Update status
-    const ind=document.getElementById('hatch-live-ind');
-    ind.className='hatch-live';
-    ind.innerHTML='<span class="ldot"></span> Live — '+H.snapshots.length+' samples';
-    document.getElementById('hatch-ts').textContent='Last: '+ftime(ts);
-
-    renderHatchFeed();
-  }catch(e){ console.warn('[hatch poll]',e.message); }
-}
-
-// Get delta for a pet key over the current window
-function hatchDelta(key){
-  if(H.snapshots.length<2) return null;
-  const now=H.snapshots[H.snapshots.length-1];
-  const windowStart=now.ts-H.windowSec*1000;
-  // Find the oldest snapshot within the window
-  let oldest=null;
-  for(const s of H.snapshots){
-    if(s.ts>=windowStart){ oldest=s; break; }
+    document.getElementById('hatch-ts').textContent = H.snapshots.length
+      ? 'Last: ' + ftime(H.snapshots[H.snapshots.length-1].ts) : '';
+  } catch(e) {
+    console.warn('[hatch]', e.message);
+    document.getElementById('hatch-live-ind').innerHTML = '⚠ Could not load hatch data';
   }
-  if(!oldest||oldest===now) return null;
-  const curVal=now.pets[key]?.exists;
-  const oldVal=oldest.pets[key]?.exists;
-  if(curVal==null||oldVal==null) return null;
-  return curVal-oldVal;
 }
 
-// Build list of all tracked pets (union across all snapshots)
-function hatchAllPets(){
-  const all={};
-  for(const s of H.snapshots){
-    for(const [k,v] of Object.entries(s.pets)) all[k]=v;
-  }
-  return all;
+function hatchDataForKey(key) {
+  return H.snapshots.map(s => ({ts:s.ts, v:s.d[key]})).filter(p => p.v !== undefined);
 }
 
-function renderHatchFeed(){
-  const now=H.snapshots[H.snapshots.length-1];
-  if(!now||H.snapshots.length<2){
-    // Warming up
-    document.getElementById('hatch-summary').innerHTML='';
-    document.getElementById('hatch-feed-body').innerHTML=`
+function hatchDelta(key) {
+  if (H.snapshots.length < 2) return null;
+  const now    = H.snapshots[H.snapshots.length - 1];
+  const wStart = now.ts - H.windowSec * 1000;
+  let oldest = null;
+  for (const s of H.snapshots) { if (s.ts >= wStart) { oldest = s; break; } }
+  if (!oldest || oldest === now) return null;
+  const cur = now.d[key], old = oldest.d[key];
+  if (cur == null || old == null) return null;
+  return cur - old;
+}
+
+function renderHatchFeed() {
+  const now = H.snapshots.length ? H.snapshots[H.snapshots.length - 1] : null;
+  if (!now || H.snapshots.length < 2) {
+    document.getElementById('hatch-summary').innerHTML = '';
+    document.getElementById('hatch-feed-body').innerHTML = `
       <div class="warming-up">
         <div class="wu-icon">🥚</div>
-        <p>Collecting data… first delta appears after 2 polls (30 seconds).</p>
+        <p>Waiting for data — the worker cron runs every 5 minutes.</p>
         <div class="wu-bar"><div class="wu-fill"></div></div>
-        <div class="wu-sub">${H.snapshots.length} sample${H.snapshots.length!==1?'s':''} collected</div>
+        <div class="wu-sub">${H.snapshots.length} snapshot${H.snapshots.length!==1?'s':''} stored so far</div>
       </div>`;
     return;
   }
 
-  const allPets=hatchAllPets();
-
-  // Filter by htype
-  const filtered=Object.entries(allPets).filter(([,v])=>{
-    if(H.htype==='huge') return v.type==='huge';
-    if(H.htype==='titanic') return v.type==='titanic';
+  const allKeys = Object.keys(H.petMeta).filter(k => {
+    const n = H.petMeta[k].id.toLowerCase();
+    if (H.htype==='huge'    && !n.includes('huge'))    return false;
+    if (H.htype==='titanic' && !n.includes('titanic')) return false;
     return true;
   });
 
-  // Compute deltas
-  const withDelta=filtered.map(([k,v])=>({key:k,pet:v,delta:hatchDelta(k)||0}));
-  withDelta.sort((a,b)=>b.delta-a.delta);
+  const withDelta = allKeys.map(key => ({
+    key, meta: H.petMeta[key], delta: hatchDelta(key)||0, curExists: now.d[key]??null,
+  })).sort((a,b) => b.delta - a.delta);
 
-  // Summary cards
-  const totalHatched=withDelta.reduce((s,x)=>s+(x.delta>0?x.delta:0),0);
-  const activeCount=withDelta.filter(x=>x.delta>0).length;
-  const topPet=withDelta[0];
-  const windowLabel=H.windowSec<60?H.windowSec+'s':H.windowSec<3600?(H.windowSec/60)+'m':'1h';
-  document.getElementById('hatch-summary').innerHTML=`
-    <div class="hatch-sum-card"><div class="hatch-sum-lbl">Hatched (${windowLabel})</div><div class="hatch-sum-val">${totalHatched.toLocaleString()}</div><div class="hatch-sum-sub">across all tracked pets</div></div>
+  const totalHatched = withDelta.reduce((s,x) => s+(x.delta>0?x.delta:0), 0);
+  const activeCount  = withDelta.filter(x => x.delta>0).length;
+  const top = withDelta[0];
+  const wLabel = H.windowSec < 3600 ? (H.windowSec/60)+'m' : (H.windowSec/3600)+'h';
+  const spanMins = Math.round((now.ts - H.snapshots[0].ts) / 60000);
+
+  document.getElementById('hatch-summary').innerHTML = `
+    <div class="hatch-sum-card"><div class="hatch-sum-lbl">Hatched (${wLabel})</div><div class="hatch-sum-val">${totalHatched.toLocaleString()}</div><div class="hatch-sum-sub">across all tracked pets</div></div>
     <div class="hatch-sum-card"><div class="hatch-sum-lbl">Active Pets</div><div class="hatch-sum-val" style="color:var(--acc)">${activeCount}</div><div class="hatch-sum-sub">with hatches in window</div></div>
-    <div class="hatch-sum-card"><div class="hatch-sum-lbl">Hottest Pet</div><div class="hatch-sum-val" style="color:var(--acc2);font-size:14px;padding-top:3px">${topPet&&topPet.delta>0?topPet.pet.id:'—'}</div><div class="hatch-sum-sub">${topPet&&topPet.delta>0?'+'+topPet.delta.toLocaleString()+' hatched':' no activity'}</div></div>
-    <div class="hatch-sum-card"><div class="hatch-sum-lbl">Samples</div><div class="hatch-sum-val" style="color:var(--teal)">${H.snapshots.length}</div><div class="hatch-sum-sub">last ${Math.round((now.ts-H.snapshots[0].ts)/60000)} min of data</div></div>`;
+    <div class="hatch-sum-card"><div class="hatch-sum-lbl">Hottest Pet</div><div class="hatch-sum-val" style="color:var(--acc2);font-size:14px;padding-top:3px">${top&&top.delta>0?top.meta.id:'—'}</div><div class="hatch-sum-sub">${top&&top.delta>0?'+'+top.delta.toLocaleString()+' hatched':'no activity'}</div></div>
+    <div class="hatch-sum-card"><div class="hatch-sum-lbl">History</div><div class="hatch-sum-val" style="color:var(--teal)">${H.snapshots.length}</div><div class="hatch-sum-sub">${spanMins} min of data</div></div>`;
 
-  // Rate chart — total hatches per poll interval over time
   renderHatchRateChart();
 
-  // Feed grid (top active pets)
-  const topActive=withDelta.slice(0,30);
-  const gridHtml=topActive.map((x,i)=>{
-    const {key,pet,delta}=x;
-    const url=petImg(pet.id,pet.pt||0);
-    const vl=vLabel(pet.pt,pet.sh);
-    const icoHtml=url?`<img class="pi" src="${url}" loading="lazy">${vOverlay(pet.pt,pet.sh)}`:
-      `<span class="pp" style="font-size:24px">🐾</span>${vOverlay(pet.pt,pet.sh)}`;
-    const curExists=now.pets[key]?.exists;
-    const ratePerMin=H.windowSec>0?(delta/(H.windowSec/60)).toFixed(1):0;
-    return `<div class="feed-card${delta===0?' inactive':''}" data-petid="${esc(pet.id)}" data-pt="${pet.pt}" style="animation-delay:${i*15}ms">
-      <div class="fc-ico">${icoHtml}</div>
+  const gridHtml = withDelta.slice(0, 30).map((x,i) => {
+    const {key,meta,delta,curExists} = x;
+    const url = petImg(meta.id, meta.pt);
+    const ico = url
+      ? `<img class="pi" src="${url}" loading="lazy">${vOverlay(meta.pt, meta.sh)}`
+      : `<span class="pp" style="font-size:24px">🐾</span>${vOverlay(meta.pt, meta.sh)}`;
+    const ratePerMin = H.windowSec>0 ? (delta/(H.windowSec/60)).toFixed(1) : 0;
+    return `<div class="feed-card${delta===0?' inactive':''}" data-key="${esc(key)}" style="animation-delay:${i*12}ms">
+      <div class="fc-ico">${ico}</div>
       <div class="fc-info">
-        <div class="fc-name">${esc(pet.id)}${vl?` <small style="color:var(--t3)">${esc(vl)}</small>`:''}</div>
+        <div class="fc-name">${esc(meta.id)}${(meta.pt||meta.sh)?` <small>${vLabelHtml(meta.pt,meta.sh)}</small>`:''}</div>
         ${delta>0
-          ?`<div class="fc-delta">+${delta.toLocaleString()} <span style="font-size:11px;color:var(--t2);font-weight:400">hatched</span></div>
-            <div class="fc-rate">${ratePerMin}/min avg</div>`
+          ?`<div class="fc-delta">+${delta.toLocaleString()} <span style="font-size:11px;color:var(--t2);font-weight:400">hatched</span></div><div class="fc-rate">${ratePerMin}/min avg</div>`
           :`<div class="fc-delta zero">No activity</div>`}
         <div class="fc-exists">Supply: ${fmt(curExists)}</div>
       </div>
     </div>`;
   }).join('');
 
-  // Detailed table
-  const tableHtml=withDelta.map(({key,pet,delta})=>{
-    const url=petImg(pet.id,pet.pt||0);
-    const curExists=now.pets[key]?.exists;
-    const ratePerMin=H.windowSec>0?(delta/(H.windowSec/60)).toFixed(1):0;
-    const sp=spark(H.snapshots.map(s=>({ts:s.ts,v:s.pets[key]?.exists})).filter(p=>p.v!=null),70,18);
-    return `<div class="hatch-trow" data-petid="${esc(pet.id)}" data-pt="${pet.pt}">
-      <div class="ht-name">${url?`<img src="${url}" onerror="this.style.display='none'">`:''}<span>${esc(pet.id)}${pet.sh?'<small style="color:var(--t3)"> ✨</small>':''}</span></div>
+  const tableHtml = withDelta.map(({key,meta,delta,curExists}) => {
+    const url = petImg(meta.id, meta.pt);
+    const sp  = spark(hatchDataForKey(key), 70, 18);
+    const ratePerMin = H.windowSec>0 ? (delta/(H.windowSec/60)).toFixed(1) : 0;
+    const icoCell = `<div style="width:24px;height:24px;border-radius:4px;overflow:hidden;background:var(--s3);flex-shrink:0;position:relative;display:inline-flex;align-items:center;justify-content:center;">
+      ${url?`<img src="${url}" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2" onerror="this.style.display='none'">`:
+           `<span style="font-size:12px;position:relative;z-index:2">🐾</span>`}
+      ${vOverlay(meta.pt, meta.sh)}
+    </div>`;
+    return `<div class="hatch-trow" data-key="${esc(key)}">
+      <div class="ht-name">${icoCell}<span>${esc(meta.id)}${(meta.pt||meta.sh)?` <small>${vLabelHtml(meta.pt,meta.sh)}</small>`:''}</span></div>
       <div class="ht-delta${delta===0?' zero':''}">${delta>0?'+'+delta.toLocaleString():delta===0?'—':delta.toLocaleString()}</div>
       <div class="ht-exists">${fmt(curExists)}</div>
       <div class="ht-rate">${delta>0?ratePerMin+'/m':''}</div>
     </div>`;
   }).join('');
 
-  document.getElementById('hatch-feed-body').innerHTML=`
+  document.getElementById('hatch-feed-body').innerHTML = `
     <div class="feed-grid">${gridHtml}</div>
-    <div class="sec-hdr" style="margin-top:8px">Full Table <span>all tracked pets, sorted by activity</span></div>
+    <div class="sec-hdr" style="margin-top:8px">Full Table <span>all tracked pets · sorted by activity</span></div>
     <div class="hatch-table">
-      <div class="hatch-table-hdr"><div>Pet</div><div style="text-align:right">Hatched (${windowLabel})</div><div style="text-align:right">Total Supply</div><div style="text-align:right">Rate/min</div></div>
-      ${tableHtml}
+      <div class="hatch-table-hdr">
+        <div>Pet</div><div style="text-align:right">Hatched (${wLabel})</div>
+        <div style="text-align:right">Total Supply</div><div style="text-align:right">Rate/min</div>
+      </div>${tableHtml}
     </div>`;
 
-  // Click handlers — open modal for the item
-  document.querySelectorAll('.feed-card[data-petid], .hatch-trow[data-petid]').forEach(el=>{
-    el.addEventListener('click',()=>{
-      const id=el.dataset.petid, pt=parseInt(el.dataset.pt)||0;
-      const item=S.items.find(x=>x.category==='Pet'&&x.configData.id===id&&(x.configData.pt||0)===pt);
-      if(item) openModal(item);
+  document.querySelectorAll('.feed-card[data-key],.hatch-trow[data-key]').forEach(el => {
+    el.addEventListener('click', () => {
+      const meta = H.petMeta[el.dataset.key]; if (!meta) return;
+      const item = S.items.find(x => x.category==='Pet' && x.configData.id===meta.id && (x.configData.pt||0)===meta.pt);
+      if (item) openModal(item);
     });
   });
 }
 
-function renderHatchRateChart(){
-  if(H.rateChart){H.rateChart.destroy();H.rateChart=null;}
-  if(H.snapshots.length<3) return;
-
-  // Total delta between consecutive snapshots for filtered pet type
-  const points=[];
-  for(let i=1;i<H.snapshots.length;i++){
+function renderHatchRateChart() {
+  if (H.rateChart) { H.rateChart.destroy(); H.rateChart = null; }
+  if (H.snapshots.length < 3) return;
+  const points = [];
+  for (let i=1; i<H.snapshots.length; i++) {
     const prev=H.snapshots[i-1], cur=H.snapshots[i];
-    let total=0;
-    for(const [k,v] of Object.entries(cur.pets)){
-      if(H.htype==='huge'&&v.type!=='huge') continue;
-      if(H.htype==='titanic'&&v.type!=='titanic') continue;
-      const prevEx=prev.pets[k]?.exists;
-      if(prevEx!=null&&v.exists>prevEx) total+=v.exists-prevEx;
+    let total = 0;
+    for (const [key, curEx] of Object.entries(cur.d)) {
+      const meta = H.petMeta[key]; if (!meta) continue;
+      const n = meta.id.toLowerCase();
+      if (H.htype==='huge'    && !n.includes('huge'))    continue;
+      if (H.htype==='titanic' && !n.includes('titanic')) continue;
+      const prevEx = prev.d[key];
+      if (prevEx!=null && curEx>prevEx) total += curEx-prevEx;
     }
-    points.push({ts:cur.ts,v:total});
+    points.push({ts:cur.ts, v:total});
   }
-  if(points.length<2) return;
-
-  const ctx=document.getElementById('hatch-rate-chart').getContext('2d');
-  const vals=points.map(p=>p.v);
-  const g=ctx.createLinearGradient(0,0,0,180);
-  g.addColorStop(0,'rgba(46,204,113,.25)');g.addColorStop(1,'rgba(0,0,0,0)');
-  H.rateChart=new Chart(ctx,{type:'bar',
-    data:{labels:points.map(p=>ftime(p.ts)),datasets:[{
-      data:vals,backgroundColor:vals.map(v=>v>0?'rgba(46,204,113,.6)':'rgba(71,79,104,.4)'),
-      borderColor:vals.map(v=>v>0?'#2ecc71':'#474f68'),borderWidth:1,borderRadius:3}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1b1e28',borderColor:'#2a3050',borderWidth:1,
-        titleColor:'#828ba8',bodyColor:'#2ecc71',bodyFont:{family:'Space Mono',size:11},
-        callbacks:{label:c=>' +'+c.raw.toLocaleString()+' hatched'}}},
-      scales:{x:{ticks:{color:'#474f68',font:{size:9},maxTicksLimit:12,maxRotation:0},grid:{color:'rgba(255,255,255,.03)'}},
-        y:{ticks:{color:'#474f68',font:{family:'Space Mono',size:9},callback:v=>fmt(v)},grid:{color:'rgba(255,255,255,.03)'},min:0}}}});
+  if (points.length < 2) return;
+  const ctx  = document.getElementById('hatch-rate-chart').getContext('2d');
+  const vals = points.map(p=>p.v);
+  H.rateChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: points.map(p=>ftime(p.ts)), datasets: [{
+      data: vals,
+      backgroundColor: vals.map(v=>v>0?'rgba(46,204,113,.55)':'rgba(71,79,104,.35)'),
+      borderColor: vals.map(v=>v>0?'#2ecc71':'#474f68'),
+      borderWidth:1, borderRadius:3 }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ backgroundColor:'#1b1e28',borderColor:'#2a3050',borderWidth:1,
+          titleColor:'#828ba8',bodyColor:'#2ecc71',bodyFont:{family:'Space Mono',size:11},
+          callbacks:{label:c=>' +'+c.raw.toLocaleString()+' hatched'} } },
+      scales:{
+        x:{ticks:{color:'#474f68',font:{size:9},maxTicksLimit:14,maxRotation:0},grid:{color:'rgba(255,255,255,.03)'}},
+        y:{ticks:{color:'#474f68',font:{family:'Space Mono',size:9},callback:v=>fmt(v)},grid:{color:'rgba(255,255,255,.03)'},min:0} } },
+  });
 }
 
 /* ══════════════════════════════════════════
@@ -1005,7 +990,7 @@ function renderAnalytics(){
       const ico=isPet&&url?`<img class="pi" src="${url}" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2">${vOverlay(cd.pt,cd.sh)}`:
         `<span class="pp" style="font-size:14px">${cEmoji(item.category)}</span>`;
       return `<div class="mover-item" data-key="${esc(item.key)}"><div class="mover-ico">${ico}</div>
-        <div class="mover-name">${esc(cd.id)}${vl?` <small style="color:var(--t3)">${esc(vl)}</small>`:''}</div>
+        <div class="mover-name">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
         <div class="mover-val">${fmt(item.rap)}</div>
         <div class="mover-pct ${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>`;
     }).join('');
@@ -1053,7 +1038,7 @@ function renderAnalytics(){
     const cd=item.configData,c=catCls(item.category),vl=vLabel(cd.pt,cd.sh);
     return `<div class="sc-item" data-key="${esc(item.key)}">
       <div class="cmeta">${vBadges(cd.pt,cd.sh,cd.tn)}</div>
-      <div class="sc-name">${esc(cd.id)}${vl?` <small style="color:var(--t3)">${esc(vl)}</small>`:''}</div>
+      <div class="sc-name">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
       <div class="sc-score-bar"><div class="sc-score-fill" style="width:${((score/maxS)*100).toFixed(1)}%"></div></div>
       <div class="sc-nums"><span class="sn-rap">${fmt(item.rap)}</span><span class="sn-ex">${fmt(item.exists)} supply</span></div></div>`;
   }).join('');
@@ -1092,7 +1077,7 @@ function openModal(item){
   const mico=document.getElementById('mico');
   mico.className=`mico ${c}`;
   mico.innerHTML=isPet&&url?`<img class="pi" src="${url}">${vOverlay(cd.pt,cd.sh)}`:`<span class="pp">${cEmoji(item.category)}</span>${vOverlay(cd.pt,cd.sh)}`;
-  document.getElementById('mnam').textContent=cd.id+(vl?` (${vl})`:'');
+  document.getElementById('mnam').innerHTML=esc(cd.id)+(vl?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:'');
   document.getElementById('mbdgs').innerHTML=`<span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt,cd.sh,cd.tn)}`;
   document.getElementById('mstats').innerHTML=`
     <div class="mstat${item.rap==null?' no-data':''}"><div class="mstat-lbl">RAP</div><div class="mstat-val">${fmt(item.rap)}</div></div>
@@ -1130,11 +1115,9 @@ document.querySelectorAll('.nav-tab').forEach(b=>b.addEventListener('click',()=>
   document.getElementById('page-'+b.dataset.page).classList.add('on');
   if(b.dataset.page==='analytics') renderAnalytics();
   if(b.dataset.page==='hatch'){
-    // Start polling if not already
-    if(!hatchPollTimer){
-      pollHatches(); // immediate first poll
-      hatchPollTimer=setInterval(pollHatches,HATCH_MS);
-    }
+    // Load server-side hatch history, then start refresh interval
+    loadHatchHistory().then(renderHatchFeed);
+    if(!hatchPollTimer) hatchPollTimer=setInterval(()=>loadHatchHistory().then(renderHatchFeed), HATCH_MS);
   }
 }));
 
@@ -1152,12 +1135,11 @@ document.querySelectorAll('[data-vtype]').forEach(b=>b.addEventListener('click',
   b.classList.add('on'); S.variantType=b.dataset.vtype; recompute(); renderItems();
 }));
 
-// Shiny toggle (independent)
-document.getElementById('shiny-toggle').addEventListener('click',function(){
-  S.shinyOnly=!S.shinyOnly;
-  this.classList.toggle('on',S.shinyOnly);
-  recompute(); renderItems();
-});
+// Shiny filter buttons
+document.querySelectorAll('[data-shiny]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-shiny]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); S.shinyFilter=b.dataset.shiny; recompute(); renderItems();
+}));
 
 // Hatch window selector
 document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('click',()=>{
