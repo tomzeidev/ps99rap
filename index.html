@@ -13,7 +13,8 @@
   --b1:#1f2333;--b2:#2a3050;
   --acc:#f7b731;--acc2:#ff6b35;--teal:#4ecdc4;
   --txt:#e6e8f0;--t2:#828ba8;--t3:#474f68;
-  --grn:#2ecc71;--red:#e74c3c;--grn-bg:rgba(46,204,113,.12);--red-bg:rgba(231,76,60,.12);
+  --grn:#2ecc71;--red:#e74c3c;
+  --grn-bg:rgba(46,204,113,.12);--red-bg:rgba(231,76,60,.12);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
@@ -26,98 +27,83 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   align-items:center;justify-content:center;z-index:9999;gap:16px;transition:opacity .4s,visibility .4s}
 #ldr.gone{opacity:0;visibility:hidden;pointer-events:none}
 .ld-logo{font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:700;letter-spacing:3px}
-.ld-logo span{background:linear-gradient(90deg,var(--acc),var(--acc2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ld-logo span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .ld-bar{width:220px;height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
 .ld-prog{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:2px;width:0;transition:width .22s ease}
 .ld-txt{font-size:11.5px;color:var(--t3);font-family:'Space Mono',monospace}
 
 /* ── HEADER ── */
-header{position:sticky;top:0;z-index:200;background:rgba(9,9,13,.95);
-  backdrop-filter:blur(20px);border-bottom:1px solid var(--b1);padding:0 24px}
-.hdr{max-width:1440px;margin:0 auto;display:flex;align-items:center;gap:0;height:56px}
-.logo{display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0;margin-right:24px}
-.logo-box{width:32px;height:32px;background:linear-gradient(135deg,var(--acc),var(--acc2));
-  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+header{position:sticky;top:0;z-index:200;background:rgba(9,9,13,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1);padding:0 24px}
+.hdr{max-width:1440px;margin:0 auto;display:flex;align-items:center;height:56px}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0;margin-right:20px}
+.logo-box{width:32px;height:32px;background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .logo-txt{font-family:'Rajdhani',sans-serif;font-size:21px;font-weight:700;color:var(--txt)}
 .logo-txt b{color:var(--acc)}
-
-/* Page nav tabs in header */
-.nav-tabs{display:flex;gap:0;height:100%}
-.nav-tab{background:none;border:none;border-bottom:2px solid transparent;
-  padding:0 18px;font-size:13px;font-family:'Inter',sans-serif;font-weight:500;
-  color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap;height:100%;
-  display:flex;align-items:center;gap:6px}
+.nav-tabs{display:flex;height:100%}
+.nav-tab{background:none;border:none;border-bottom:2px solid transparent;padding:0 16px;
+  font-size:13px;font-family:'Inter',sans-serif;font-weight:500;color:var(--t2);
+  cursor:pointer;transition:all .15s;white-space:nowrap;height:100%;
+  display:flex;align-items:center;gap:5px}
 .nav-tab.on{color:var(--txt);border-bottom-color:var(--acc)}
 .nav-tab:hover:not(.on){color:var(--txt)}
-
 .hpills{display:flex;gap:7px;margin-left:auto;flex-shrink:0;align-items:center}
-.pill{background:var(--s2);border:1px solid var(--b1);border-radius:20px;
-  padding:3px 11px;font-size:10.5px;color:var(--t2);display:flex;align-items:center;gap:5px;white-space:nowrap}
+.pill{background:var(--s2);border:1px solid var(--b1);border-radius:20px;padding:3px 11px;
+  font-size:10.5px;color:var(--t2);display:flex;align-items:center;gap:5px;white-space:nowrap}
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 #hts{font-size:10px;color:var(--t3)}
 
 /* ── PAGES ── */
-main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px 24px}
+main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
 .page{display:none}.page.on{display:block}
 
 /* ── HERO ── */
-.hero{margin-bottom:20px}
-.hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(22px,3.2vw,40px);
-  font-weight:700;line-height:1.1;letter-spacing:.4px;margin-bottom:4px}
-.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),var(--acc2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero{margin-bottom:18px}
+.hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(22px,3.2vw,40px);font-weight:700;line-height:1.1;letter-spacing:.4px;margin-bottom:4px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero p{color:var(--t2);font-size:12.5px}
 
 /* ── CONTROLS ── */
 .ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .sw{position:relative;flex:1;min-width:180px;max-width:320px}
 .sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none}
-.si{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;
-  padding:7px 10px 7px 32px;color:var(--txt);font-size:13px;font-family:'Inter',sans-serif;
-  outline:none;transition:border-color .15s}
+.si{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:7px 10px 7px 32px;color:var(--txt);font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
 .si::placeholder{color:var(--t3)}.si:focus{border-color:var(--b2)}
 .tg{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:3px;gap:2px}
-.tb{background:none;border:none;cursor:pointer;padding:4px 11px;border-radius:6px;
-  font-size:12px;font-family:'Inter',sans-serif;color:var(--t2);
-  transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.tb{background:none;border:none;cursor:pointer;padding:4px 11px;border-radius:6px;font-size:12px;font-family:'Inter',sans-serif;color:var(--t2);transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap}
 .tb.on{background:var(--acc);color:#000;font-weight:600}
 .tb:not(.on):hover{color:var(--txt);background:var(--b1)}
 
 /* ── FILTER ROWS ── */
 .cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.cb{background:var(--s2);border:1px solid var(--b1);border-radius:20px;
-  padding:3px 10px;font-size:11px;font-family:'Inter',sans-serif;
-  color:var(--t2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+.cb{background:var(--s2);border:1px solid var(--b1);border-radius:20px;padding:3px 10px;font-size:11px;font-family:'Inter',sans-serif;color:var(--t2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
 .cb .cn{background:var(--s3);border-radius:10px;padding:0 5px;font-size:9px;color:var(--t3);font-family:'Space Mono',monospace}
 .cb.on{border-color:var(--acc);color:var(--acc);background:rgba(247,183,49,.07)}
 .cb.on .cn{background:rgba(247,183,49,.14);color:var(--acc)}
 .cb:not(.on):hover{color:var(--txt);border-color:var(--b2)}
 
-.vfilts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
-.vfilt-lbl{font-size:11px;color:var(--t3)}
-.vb{background:var(--s2);border:1px solid var(--b1);border-radius:6px;
-  padding:3px 9px;font-size:11px;font-family:'Inter',sans-serif;color:var(--t2);cursor:pointer;transition:all .15s}
+/* ── VARIANT FILTERS — two rows: Type + Shiny toggle ── */
+.vfilts{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.vfilt-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.vfilt-lbl{font-size:11px;color:var(--t3);width:44px;flex-shrink:0}
+.vb{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:3px 9px;font-size:11px;font-family:'Inter',sans-serif;color:var(--t2);cursor:pointer;transition:all .15s}
 .vb.on{border-color:var(--acc);color:var(--acc);background:rgba(247,183,49,.07)}
 .vb-gld.on{border-color:#ffd700;color:#ffd700;background:rgba(255,215,0,.07)}
 .vb-rb.on{border-color:#cc88ff;color:#cc88ff;background:rgba(180,100,255,.07)}
-.vb-sh.on{border-color:#c8dcff;color:#c8dcff;background:rgba(200,220,255,.07)}
+.vb-sh.on{border-color:#c8dcff;color:#c8dcff;background:rgba(200,220,255,.1)}
 .vb:not(.on):hover{color:var(--txt);border-color:var(--b2)}
 
 /* ── SORT BAR ── */
 .srt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .srt-lbl{font-size:11px;color:var(--t3)}
 .srt-btns{display:flex;gap:4px;flex-wrap:wrap}
-.sb{background:none;border:1px solid var(--b1);border-radius:6px;
-  padding:3px 9px;font-size:11px;font-family:'Inter',sans-serif;color:var(--t2);cursor:pointer;transition:all .15s}
+.sb{background:none;border:1px solid var(--b1);border-radius:6px;padding:3px 9px;font-size:11px;font-family:'Inter',sans-serif;color:var(--t2);cursor:pointer;transition:all .15s}
 .sb.on{border-color:var(--acc);color:var(--acc);background:rgba(247,183,49,.06)}
 .sb:not(.on):hover{color:var(--txt);border-color:var(--b2)}
 .rct{margin-left:auto;font-size:11px;color:var(--t3)}
 
-/* ── % CHANGE CHIP ── */
-.pct{font-size:10px;font-family:'Space Mono',monospace;font-weight:700;
-  padding:1px 5px;border-radius:4px;white-space:nowrap;display:inline-block}
+/* ── % CHIP ── */
+.pct{font-size:10px;font-family:'Space Mono',monospace;font-weight:700;padding:1px 5px;border-radius:4px;white-space:nowrap;display:inline-block}
 .pct.up{background:var(--grn-bg);color:var(--grn)}
 .pct.dn{background:var(--red-bg);color:var(--red)}
 .pct.nil{background:var(--s3);color:var(--t3)}
@@ -127,31 +113,21 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px 24p
 .listv{display:flex;flex-direction:column;gap:4px}
 
 /* ── CARD ── */
-.card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;
-  cursor:pointer;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s;
-  position:relative;overflow:hidden;contain:layout style;animation:fi .22s ease both}
-.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--cc,var(--b1));opacity:0;transition:opacity .15s}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;cursor:pointer;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s;position:relative;overflow:hidden;contain:layout style;animation:fi .22s ease both}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cc,var(--b1));opacity:0;transition:opacity .15s}
 .card:hover{border-color:var(--b2);background:var(--s2);transform:translateY(-2px);box-shadow:0 5px 20px rgba(0,0,0,.3)}
 .card:hover::after{opacity:1}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* ── PET ICON ── */
-.iw{position:relative;width:100%;aspect-ratio:1;overflow:hidden;
-  background:var(--s3);border-radius:9px 9px 0 0;display:flex;align-items:center;justify-content:center}
+.iw{position:relative;width:100%;aspect-ratio:1;overflow:hidden;background:var(--s3);border-radius:9px 9px 0 0;display:flex;align-items:center;justify-content:center}
 .pi{width:80%;height:80%;object-fit:contain;display:block;position:relative;z-index:2}
 .pp{font-size:44px;z-index:2;position:relative;user-select:none;line-height:1}
-.ov-rb{position:absolute;inset:0;z-index:3;pointer-events:none;
-  background:linear-gradient(135deg,#ff4466 0%,#ff9900 20%,#ffee00 40%,#44ee44 60%,#44aaff 80%,#cc44ff 100%);
-  mix-blend-mode:color;opacity:.68;will-change:filter;animation:rbhue 4s linear infinite}
+.ov-rb{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(135deg,#ff4466 0%,#ff9900 20%,#ffee00 40%,#44ee44 60%,#44aaff 80%,#cc44ff 100%);mix-blend-mode:color;opacity:.68;will-change:filter;animation:rbhue 4s linear infinite}
 @keyframes rbhue{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
-.ov-gld{position:absolute;inset:0;z-index:3;pointer-events:none;
-  background:radial-gradient(circle at 38% 38%,rgba(255,220,60,.5),rgba(255,140,0,.3) 56%,transparent 78%);
-  mix-blend-mode:overlay}
+.ov-gld{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(circle at 38% 38%,rgba(255,220,60,.5),rgba(255,140,0,.3) 56%,transparent 78%);mix-blend-mode:overlay}
 .ov-sh{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
-.ov-sh::before,.ov-sh::after{content:'✦ ✦ ✦';position:absolute;font-size:10px;
-  color:rgba(255,255,255,.88);text-shadow:0 0 5px #fff,0 0 9px #ffe;
-  animation:spk 2.6s ease-in-out infinite;letter-spacing:6px}
+.ov-sh::before,.ov-sh::after{content:'✦ ✦ ✦';position:absolute;font-size:10px;color:rgba(255,255,255,.88);text-shadow:0 0 5px #fff,0 0 9px #ffe;animation:spk 2.6s ease-in-out infinite;letter-spacing:6px}
 .ov-sh::before{top:6px;left:8%;animation-delay:.5s}
 .ov-sh::after{bottom:6px;right:8%;font-size:8px;animation-delay:1.5s}
 @keyframes spk{0%,100%{opacity:0;transform:scale(.5)}45%,55%{opacity:1;transform:scale(1)}}
@@ -160,213 +136,280 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px 24p
 .cbody{padding:9px 11px 11px}
 .cmeta{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:4px}
 .cname{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;line-height:1.3;margin-bottom:7px}
-.cvals{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px}
+.cvals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:5px}
 .cval-box{background:var(--s3);border-radius:7px;padding:5px 7px}
 .cval-lbl{font-size:8.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:2px}
-.cval-num{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:var(--acc);letter-spacing:-.3px;line-height:1}
+.cval-num{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--acc);letter-spacing:-.3px;line-height:1}
 .cval-box.exists .cval-num{color:var(--teal)}
 .cval-box.mcap .cval-num{color:#9b8fe8}
 .cval-box.no-data .cval-num{color:var(--t3);font-size:10px}
 .card-pcts{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:4px}
 .spark-wrap{width:100%;height:22px;margin-top:3px}
 .no-spark{display:flex;align-items:center;gap:4px;margin-top:4px;font-size:9px;color:var(--t3)}
+.card-desc{font-size:9.5px;color:var(--t3);font-style:italic;margin-bottom:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 /* ── LIST ROW ── */
-.row{background:var(--s1);border:1px solid var(--b1);border-radius:8px;
-  padding:7px 12px;display:flex;align-items:center;gap:8px;
-  cursor:pointer;transition:border-color .12s,background .12s;contain:layout style;animation:fi .22s ease both}
+.row{background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:7px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:border-color .12s,background .12s;contain:layout style;animation:fi .22s ease both}
 .row:hover{border-color:var(--b2);background:var(--s2)}
-.ri{width:32px;height:32px;border-radius:6px;overflow:hidden;background:var(--s3);
-  flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
+.ri{width:32px;height:32px;border-radius:6px;overflow:hidden;background:var(--s3);flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
 .ri .pi{width:86%;height:86%}.ri .pp{font-size:15px}
 .rcat{flex-shrink:0;width:64px}
-.rname{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;
-  flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rname{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rbdgs{display:flex;gap:3px;flex-shrink:0}
-/* columns */
-.rcol{flex-shrink:0;text-align:right;min-width:70px}
+.rcol{flex-shrink:0;text-align:right;min-width:68px}
 .rcol-lbl{font-size:8.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;display:block}
 .rcol-val{font-family:'Space Mono',monospace;font-size:11.5px;font-weight:700;color:var(--acc)}
-.rcol.exists .rcol-val{color:var(--teal)}
-.rcol.mcap .rcol-val{color:#9b8fe8}
+.rcol.exists .rcol-val{color:var(--teal)}.rcol.mcap .rcol-val{color:#9b8fe8}
 .rcol.no-data .rcol-val{color:var(--t3);font-size:10px}
 .rcol-pcts{display:flex;gap:3px;justify-content:flex-end;margin-top:2px;flex-wrap:wrap}
-.rspark{flex-shrink:0;width:58px;height:20px}
+.rspark{flex-shrink:0;width:56px;height:20px}
 
 /* ── BADGES ── */
-.bdg{font-size:8.5px;font-family:'Space Mono',monospace;padding:1px 5px;
-  border-radius:4px;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+.bdg{font-size:8.5px;font-family:'Space Mono',monospace;padding:1px 5px;border-radius:4px;font-weight:700;letter-spacing:.3px;white-space:nowrap}
 .b-gld{background:rgba(255,215,0,.13);color:#ffd700;border:1px solid rgba(255,215,0,.26)}
 .b-rb{background:rgba(180,100,255,.13);color:#cc88ff;border:1px solid rgba(180,100,255,.26)}
 .b-sh{background:rgba(255,255,255,.08);color:#d0e4ff;border:1px solid rgba(200,224,255,.18)}
 .b-tn{background:rgba(155,89,182,.12);color:#b07cc9;border:1px solid rgba(155,89,182,.2)}
-.ctag{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:500;
-  letter-spacing:.4px;text-transform:uppercase;display:inline-flex;align-items:center}
-/* cat colours */
-.cc-Pet      {--cc:#e91e8c;background:rgba(233,30,140,.1);color:#e91e8c}
-.cc-Egg      {--cc:#f7b731;background:rgba(247,183,49,.12);color:#f7b731}
-.cc-Misc     {--cc:#4ecdc4;background:rgba(78,205,196,.1);color:#4ecdc4}
-.cc-Enchant  {--cc:#9b59b6;background:rgba(155,89,182,.12);color:#9b59b6}
-.cc-Potion   {--cc:#2ecc71;background:rgba(46,204,113,.1);color:#2ecc71}
-.cc-Lootbox  {--cc:#ff6b35;background:rgba(255,107,53,.12);color:#ff6b35}
+.ctag{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:500;letter-spacing:.4px;text-transform:uppercase;display:inline-flex;align-items:center}
+.cc-Pet{--cc:#e91e8c;background:rgba(233,30,140,.1);color:#e91e8c}
+.cc-Egg{--cc:#f7b731;background:rgba(247,183,49,.12);color:#f7b731}
+.cc-Misc{--cc:#4ecdc4;background:rgba(78,205,196,.1);color:#4ecdc4}
+.cc-Enchant{--cc:#9b59b6;background:rgba(155,89,182,.12);color:#9b59b6}
+.cc-Potion{--cc:#2ecc71;background:rgba(46,204,113,.1);color:#2ecc71}
+.cc-Lootbox{--cc:#ff6b35;background:rgba(255,107,53,.12);color:#ff6b35}
 .cc-Hoverboard{--cc:#3498db;background:rgba(52,152,219,.1);color:#3498db}
-.cc-Fruit    {--cc:#e74c3c;background:rgba(231,76,60,.1);color:#e74c3c}
-.cc-def      {--cc:#828ba8;background:rgba(130,139,168,.1);color:#828ba8}
+.cc-Fruit{--cc:#e74c3c;background:rgba(231,76,60,.1);color:#e74c3c}
+.cc-def{--cc:#828ba8;background:rgba(130,139,168,.1);color:#828ba8}
 
 /* ── PAGINATION ── */
-.pgbar{display:flex;align-items:center;justify-content:center;gap:5px;
-  margin-top:18px;flex-wrap:wrap;padding-bottom:20px}
-.pgbtn{background:var(--s2);border:1px solid var(--b1);border-radius:7px;
-  padding:5px 10px;font-size:11.5px;font-family:'Inter',sans-serif;color:var(--t2);
-  cursor:pointer;transition:all .15s;min-width:32px;text-align:center}
+.pgbar{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:18px;flex-wrap:wrap;padding-bottom:20px}
+.pgbtn{background:var(--s2);border:1px solid var(--b1);border-radius:7px;padding:5px 10px;font-size:11.5px;font-family:'Inter',sans-serif;color:var(--t2);cursor:pointer;transition:all .15s;min-width:32px;text-align:center}
 .pgbtn:hover:not([disabled]){color:var(--txt);border-color:var(--b2)}
 .pgbtn.cur{background:var(--acc);border-color:var(--acc);color:#000;font-weight:600}
 .pgbtn[disabled]{opacity:.3;cursor:not-allowed}
 .pgbtn.ell{cursor:default;pointer-events:none;background:none;border-color:transparent}
 .pg-info{font-size:11px;color:var(--t3);padding:0 4px}
 
-/* ═══════════════════════════════════
-   ANALYTICS PAGE
-═══════════════════════════════════ */
-
-/* Stat cards row */
+/* ═══════════════════════
+   ANALYTICS
+═══════════════════════ */
 .stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-bottom:20px}
 .stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px 16px}
 .stat-card .sc-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:4px}
 .stat-card .sc-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--acc);line-height:1}
 .stat-card .sc-sub{font-size:10.5px;color:var(--t2);margin-top:4px}
-.stat-card.teal .sc-val{color:var(--teal)}
-.stat-card.purple .sc-val{color:#9b8fe8}
-.stat-card.grn .sc-val{color:var(--grn)}
-
-/* Section headers */
-.sec-hdr{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;
-  letter-spacing:.4px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.stat-card.teal .sc-val{color:var(--teal)}.stat-card.purple .sc-val{color:#9b8fe8}.stat-card.grn .sc-val{color:var(--grn)}
+.sec-hdr{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:.4px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
 .sec-hdr span{font-size:11px;color:var(--t3);font-family:'Inter',sans-serif;font-weight:400}
-
-/* Movers grid */
 .movers-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
 .movers-panel{background:var(--s1);border:1px solid var(--b1);border-radius:11px;overflow:hidden}
-.movers-panel-hdr{padding:10px 14px;border-bottom:1px solid var(--b1);font-size:11px;
-  font-weight:600;text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:7px}
+.movers-panel-hdr{padding:10px 14px;border-bottom:1px solid var(--b1);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:7px}
 .movers-panel-hdr.up{color:var(--grn)}.movers-panel-hdr.dn{color:var(--red)}
-.mover-item{display:flex;align-items:center;gap:10px;padding:8px 14px;
-  border-bottom:1px solid var(--b1);cursor:pointer;transition:background .12s}
+.mover-item{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--b1);cursor:pointer;transition:background .12s}
 .mover-item:last-child{border-bottom:none}
 .mover-item:hover{background:var(--s2)}
-.mover-ico{width:28px;height:28px;border-radius:5px;overflow:hidden;background:var(--s3);
-  flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
+.mover-ico{width:28px;height:28px;border-radius:5px;overflow:hidden;background:var(--s3);flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
 .mover-ico .pi{width:88%;height:88%}.mover-ico .pp{font-size:14px}
-.mover-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;min-width:0;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mover-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mover-val{font-family:'Space Mono',monospace;font-size:11px;color:var(--t2);flex-shrink:0}
 .mover-pct{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;flex-shrink:0;min-width:60px;text-align:right}
 .mover-pct.up{color:var(--grn)}.mover-pct.dn{color:var(--red)}
-
-/* Huge inflation */
 .huge-wrap{margin-bottom:24px}
-.huge-chart-box{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px;
-  margin-bottom:12px;height:240px}
+.huge-chart-box{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px;margin-bottom:12px;height:240px}
 .huge-table{background:var(--s1);border:1px solid var(--b1);border-radius:11px;overflow:hidden}
-.huge-table-hdr{display:grid;grid-template-columns:1fr 90px 90px 90px 80px;
-  padding:8px 14px;border-bottom:1px solid var(--b1);font-size:9.5px;
-  color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-.huge-row{display:grid;grid-template-columns:1fr 90px 90px 90px 80px;
-  padding:8px 14px;border-bottom:1px solid var(--b1);align-items:center;
-  cursor:pointer;transition:background .12s}
-.huge-row:last-child{border-bottom:none}
-.huge-row:hover{background:var(--s2)}
-.huge-row .hr-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;
-  display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
-.huge-row .hr-name img{width:24px;height:24px;border-radius:4px;object-fit:contain;
-  background:var(--s3);flex-shrink:0}
+.huge-table-hdr{display:grid;grid-template-columns:1fr 90px 90px 90px 80px;padding:8px 14px;border-bottom:1px solid var(--b1);font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.huge-row{display:grid;grid-template-columns:1fr 90px 90px 90px 80px;padding:8px 14px;border-bottom:1px solid var(--b1);align-items:center;cursor:pointer;transition:background .12s}
+.huge-row:last-child{border-bottom:none}.huge-row:hover{background:var(--s2)}
+.huge-row .hr-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
+.huge-row .hr-name img{width:24px;height:24px;border-radius:4px;object-fit:contain;background:var(--s3);flex-shrink:0}
 .huge-row .hr-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .huge-row .hr-num{font-family:'Space Mono',monospace;font-size:11px;color:var(--t2);text-align:right}
 .huge-row .hr-rap{font-family:'Space Mono',monospace;font-size:11px;color:var(--acc);text-align:right}
 .huge-row .hr-vel{font-family:'Space Mono',monospace;font-size:11px;text-align:right;font-weight:700}
 .huge-row .hr-vel.up{color:var(--grn)}.huge-row .hr-vel.dn{color:var(--red)}.huge-row .hr-vel.nil{color:var(--t3)}
 .huge-row .hr-spark{display:flex;justify-content:flex-end}
-
-/* Scarcity matrix */
 .scarcity-wrap{margin-bottom:24px}
 .scarcity-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
-.sc-item{background:var(--s1);border:1px solid var(--b1);border-radius:9px;
-  padding:10px 12px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:5px}
+.sc-item{background:var(--s1);border:1px solid var(--b1);border-radius:9px;padding:10px 12px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:5px}
 .sc-item:hover{border-color:var(--b2);background:var(--s2)}
-.sc-item .sc-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-item .sc-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sc-item .sc-score-bar{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:2px}
 .sc-item .sc-score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--grn),var(--acc))}
 .sc-item .sc-nums{display:flex;justify-content:space-between;font-size:10px}
 .sc-item .sc-nums .sn-rap{font-family:'Space Mono',monospace;color:var(--acc);font-weight:700}
 .sc-item .sc-nums .sn-ex{font-family:'Space Mono',monospace;color:var(--teal)}
 
+/* ═══════════════════════
+   HATCH FEED PAGE
+═══════════════════════ */
+.hatch-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.hatch-status{display:flex;align-items:center;gap:8px;margin-left:auto}
+.hatch-live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--grn);font-family:'Space Mono',monospace}
+.hatch-live .ldot{background:var(--grn)}
+.hatch-ts{font-size:10px;color:var(--t3)}
+.hatch-waiting{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t3);font-family:'Space Mono',monospace}
+
+/* Window selector */
+.window-sel{display:flex;gap:5px;margin-bottom:16px;align-items:center}
+.window-lbl{font-size:11px;color:var(--t3);margin-right:4px}
+.wb{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:4px 12px;font-size:11px;font-family:'Inter',sans-serif;color:var(--t2);cursor:pointer;transition:all .15s}
+.wb.on{background:var(--acc);border-color:var(--acc);color:#000;font-weight:600}
+.wb:not(.on):hover{color:var(--txt);border-color:var(--b2)}
+
+/* Type selector (Huge / Titanic) */
+.type-sel{display:flex;gap:5px;margin-bottom:16px;align-items:center}
+.type-lbl{font-size:11px;color:var(--t3);margin-right:4px}
+
+/* Hatch summary bar */
+.hatch-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:20px}
+.hatch-sum-card{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:12px 14px}
+.hatch-sum-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:3px}
+.hatch-sum-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--grn);line-height:1}
+.hatch-sum-sub{font-size:10px;color:var(--t2);margin-top:3px}
+
+/* Rate chart */
+.hatch-chart-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px;margin-bottom:16px;height:220px}
+
+/* Feed grid */
+.feed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:20px}
+.feed-card{background:var(--s1);border:1px solid var(--b1);border-radius:10px;padding:12px;display:flex;gap:12px;align-items:center;cursor:pointer;transition:all .15s;animation:fi .3s ease both;position:relative;overflow:hidden}
+.feed-card:hover{border-color:var(--b2);background:var(--s2);transform:translateY(-1px)}
+.feed-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grn);border-radius:2px 0 0 2px}
+.feed-card.inactive::before{background:var(--t3)}
+.feed-card .fc-ico{width:52px;height:52px;border-radius:8px;overflow:hidden;background:var(--s3);flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
+.feed-card .fc-ico .pi{width:84%;height:84%}.feed-card .fc-ico .pp{font-size:24px}
+.feed-card .fc-info{flex:1;min-width:0}
+.feed-card .fc-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;line-height:1.2;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-card .fc-delta{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--grn);line-height:1}
+.feed-card .fc-delta.zero{color:var(--t3);font-size:14px}
+.feed-card .fc-sub{font-size:10px;color:var(--t2);margin-top:3px}
+.feed-card .fc-rate{font-size:10px;color:var(--t3);margin-top:2px}
+.feed-card .fc-exists{font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);margin-top:3px}
+
+/* Hatch history table */
+.hatch-table{background:var(--s1);border:1px solid var(--b1);border-radius:11px;overflow:hidden;margin-bottom:16px}
+.hatch-table-hdr{display:grid;grid-template-columns:1fr 80px 80px 80px;padding:8px 14px;border-bottom:1px solid var(--b1);font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.hatch-trow{display:grid;grid-template-columns:1fr 80px 80px 80px;padding:7px 14px;border-bottom:1px solid var(--b1);align-items:center;cursor:pointer;transition:background .12s}
+.hatch-trow:last-child{border-bottom:none}.hatch-trow:hover{background:var(--s2)}
+.hatch-trow .ht-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden}
+.hatch-trow .ht-name img{width:22px;height:22px;border-radius:4px;object-fit:contain;background:var(--s3);flex-shrink:0}
+.hatch-trow .ht-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hatch-trow .ht-delta{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;text-align:right;color:var(--grn)}
+.hatch-trow .ht-delta.zero{color:var(--t3)}
+.hatch-trow .ht-exists{font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:right}
+.hatch-trow .ht-rate{font-family:'Space Mono',monospace;font-size:11px;color:var(--t2);text-align:right}
+
+/* Warming up overlay */
+.warming-up{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;color:var(--t3);text-align:center;gap:12px}
+.warming-up .wu-icon{font-size:40px}
+.warming-up .wu-bar{width:200px;height:3px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:4px}
+.warming-up .wu-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--grn));border-radius:2px;animation:warmup 30s linear forwards}
+@keyframes warmup{from{width:0}to{width:100%}}
+.warming-up p{font-size:13px}
+.warming-up .wu-sub{font-size:11px}
+
 /* ── MODAL ── */
-.mbg{position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:500;
-  display:flex;align-items:center;justify-content:center;padding:20px;
-  backdrop-filter:blur(5px);animation:fi .18s ease}
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px);animation:fi .18s ease}
 .mbg.gone{display:none}
-.mdl{background:var(--s1);border:1px solid var(--b2);border-radius:16px;
-  width:100%;max-width:700px;max-height:90vh;overflow-y:auto;
-  position:relative;animation:mslide .22s ease}
+.mdl{background:var(--s1);border:1px solid var(--b2);border-radius:16px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;position:relative;animation:mslide .22s ease}
 @keyframes mslide{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
-.mclose{position:absolute;top:12px;right:13px;background:var(--s3);
-  border:1px solid var(--b1);border-radius:6px;padding:3px 9px;
-  font-size:11px;color:var(--t2);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;z-index:10}
+.mclose{position:absolute;top:12px;right:13px;background:var(--s3);border:1px solid var(--b1);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--t2);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;z-index:10}
 .mclose:hover{color:var(--txt);border-color:var(--b2)}
 .mtop{display:flex;gap:15px;padding:18px 18px 14px;border-bottom:1px solid var(--b1);align-items:flex-start}
-.mico{width:82px;height:82px;border-radius:12px;overflow:hidden;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;position:relative}
+.mico{width:82px;height:82px;border-radius:12px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
 .mico .pi{width:80%;height:80%;position:relative;z-index:2}
 .mico .pp{font-size:38px;z-index:2;position:relative}
 .minf{flex:1;min-width:0}
 .mnam{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;line-height:1.2;margin-bottom:6px}
 .mbdgs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
-/* Modal stats grid */
-.mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:6px}
+.mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:0}
 .mstat{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:8px 10px}
 .mstat-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:3px}
 .mstat-val{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--acc);line-height:1}
-.mstat.exists .mstat-val{color:var(--teal)}
-.mstat.mcap .mstat-val{color:#9b8fe8}
+.mstat.exists .mstat-val{color:var(--teal)}.mstat.mcap .mstat-val{color:#9b8fe8}
 .mstat.no-data .mstat-val{color:var(--t3);font-size:11px;font-weight:400}
-/* Modal % change row */
-.mchg-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:0}
+.mdesc{font-size:11.5px;color:var(--t2);margin-bottom:9px;line-height:1.5;font-style:italic;padding:7px 10px;background:var(--s2);border-radius:6px;border-left:2px solid var(--b2)}
+.mbdy{padding:14px 18px 18px}
+.mchg-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
 .mchg{background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:7px 10px;text-align:center}
 .mchg-lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:3px}
 .mchg-val{font-family:'Space Mono',monospace;font-size:15px;font-weight:700}
 .mchg-val.up{color:var(--grn)}.mchg-val.dn{color:var(--red)}.mchg-val.nil{color:var(--t3)}
-/* Modal charts */
-.mbdy{padding:14px 18px 18px}
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.chart-panel .cht-ttl{font-size:10.5px;color:var(--t2);font-weight:600;text-transform:uppercase;
-  letter-spacing:.7px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.chart-panel .cht-ttl{font-size:10.5px;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
 .chart-panel .cht-ttl span{font-size:10px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0}
 .chwrap{height:180px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;padding:10px}
-.noht{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:180px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;
-  gap:5px;color:var(--t3);font-size:11.5px;text-align:center;padding:16px}
+.noht{display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;background:var(--s2);border:1px solid var(--b1);border-radius:9px;gap:5px;color:var(--t3);font-size:11.5px;text-align:center;padding:16px}
 .noht .ni{font-size:26px;margin-bottom:3px}
 
-/* ── EMPTY / MISC ── */
+/* ── MISC ── */
 .empty{text-align:center;padding:60px 20px;color:var(--t3)}
 .empty .ei{font-size:36px;margin-bottom:8px}.empty p{font-size:13px}
-.no-hist-msg{text-align:center;padding:40px 20px;color:var(--t3);font-size:13px}
-
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+.no-hist-msg{text-align:center;padding:36px 20px;color:var(--t3);font-size:13px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
 
 @media(max-width:900px){.movers-wrap{grid-template-columns:1fr}.charts-grid{grid-template-columns:1fr}
   .huge-table-hdr,.huge-row{grid-template-columns:1fr 80px 80px 70px}}
 @media(max-width:640px){
-  .hpills{display:none}.nav-tab{padding:0 12px;font-size:12px}
+  .hpills{display:none}.nav-tab{padding:0 10px;font-size:12px}
   main{padding:14px}.grid{grid-template-columns:1fr 1fr}
-  .rcat,.rspark{display:none}
-  .mstats,.mchg-row{grid-template-columns:1fr 1fr}
+  .rcat,.rspark{display:none}.mstats,.mchg-row{grid-template-columns:1fr 1fr}
   .huge-table-hdr,.huge-row{grid-template-columns:1fr 70px 70px}
   .huge-table-hdr .hth-vel,.huge-row .hr-vel,.huge-table-hdr .hth-spark,.huge-row .hr-spark{display:none}
+  .feed-grid{grid-template-columns:1fr}
+  .hatch-table-hdr,.hatch-trow{grid-template-columns:1fr 70px 70px}
 }
 @media(max-width:400px){.grid{grid-template-columns:1fr}}
+
+/* DIAMONDS PAGE */
+.diam-hero-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:22px}
+.diam-hero-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.diam-hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#6ee7f7,#a78bfa,#f9a8d4)}
+.diam-hero-card .dhc-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:4px}
+.diam-hero-card .dhc-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;line-height:1;margin-bottom:4px}
+.diam-hero-card .dhc-sub{font-size:10.5px;color:var(--t2)}
+.diam-hero-card.supply .dhc-val{color:#6ee7f7}
+.diam-hero-card.rate   .dhc-val{color:#a78bfa}
+.diam-hero-card.power  .dhc-val{color:#f9a8d4}
+.diam-hero-card.huges  .dhc-val{color:var(--acc)}
+.diam-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.diam-chart-panel{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px}
+.diam-chart-panel .dcp-title{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px}
+.diam-chart-panel .dcp-sub{font-size:11px;color:var(--t2);margin-bottom:12px}
+.diam-chart-panel .dcp-canvas{height:200px}
+.diam-table{background:var(--s1);border:1px solid var(--b1);border-radius:11px;overflow:hidden;margin-bottom:6px}
+.diam-table-hdr{display:grid;grid-template-columns:1fr 110px 120px 85px 80px;padding:8px 14px;border-bottom:1px solid var(--b1);font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.diam-row{display:grid;grid-template-columns:1fr 110px 120px 85px 80px;padding:9px 14px;border-bottom:1px solid var(--b1);align-items:center;transition:background .12s;cursor:pointer}
+.diam-row:last-child{border-bottom:none}.diam-row:hover{background:var(--s2)}
+.diam-row .dr-name{font-family:'Rajdhani',sans-serif;font-size:13.5px;font-weight:600}
+.diam-row .dr-supply{font-family:'Space Mono',monospace;font-size:11px;color:#6ee7f7;text-align:right}
+.diam-row .dr-rap{font-family:'Space Mono',monospace;font-size:11px;color:var(--acc);text-align:right}
+.diam-row .dr-pct{font-family:'Space Mono',monospace;font-size:11px;text-align:right}
+.diam-row .dr-spark{display:flex;justify-content:flex-end}
+.hd-table{background:var(--s1);border:1px solid var(--b1);border-radius:11px;overflow:hidden}
+.hd-table-hdr{display:grid;grid-template-columns:44px 1fr 140px 100px 110px;padding:8px 14px;border-bottom:1px solid var(--b1);font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.hd-row{display:grid;grid-template-columns:44px 1fr 140px 100px 110px;padding:8px 14px;border-bottom:1px solid var(--b1);align-items:center;cursor:pointer;transition:background .12s}
+.hd-row:last-child{border-bottom:none}.hd-row:hover{background:var(--s2)}
+.hd-row .hdr-ico{width:34px;height:34px;border-radius:6px;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;position:relative}
+.hd-row .hdr-ico .pi{width:86%;height:86%}
+.hd-row .hdr-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hd-row .hdr-diam{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#6ee7f7;text-align:right}
+.hd-row .hdr-pct{font-family:'Space Mono',monospace;font-size:11px;text-align:right}
+.hd-row .hdr-supply{font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:right}
+@media(max-width:900px){
+  .diam-charts{grid-template-columns:1fr}
+  .diam-table-hdr,.diam-row{grid-template-columns:1fr 100px 110px 80px}
+  .diam-table-hdr .dth-spark,.diam-row .dr-spark{display:none}
+  .hd-table-hdr,.hd-row{grid-template-columns:44px 1fr 120px 90px}
+  .hd-table-hdr .hdth-supply,.hd-row .hdr-supply{display:none}
+}
+@media(max-width:600px){
+  .diam-table-hdr,.diam-row{grid-template-columns:1fr 90px 100px}
+  .diam-table-hdr .dth-pct,.diam-row .dr-pct{display:none}
+  .hd-table-hdr,.hd-row{grid-template-columns:44px 1fr 110px}
+  .hd-table-hdr .hdth-pct,.hd-row .hdr-pct{display:none}
+}
 </style>
 </head>
 <body>
@@ -379,18 +422,19 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px 24p
 
 <header>
   <div class="hdr">
-    <a class="logo" href="#">
-      <div class="logo-box">🐾</div>
-      <div class="logo-txt">PS99<b>RAP</b></div>
-    </a>
+    <a class="logo" href="#"><div class="logo-box">🐾</div><div class="logo-txt">PS99<b>RAP</b></div></a>
     <nav class="nav-tabs">
       <button class="nav-tab on" data-page="market">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Market
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Market
+      </button>
+      <button class="nav-tab" data-page="hatch">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Hatch Feed
       </button>
       <button class="nav-tab" data-page="analytics">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Analytics
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Analytics
+      </button>
+      <button class="nav-tab" data-page="diamonds">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="8.5" x2="22" y2="8.5"/></svg>Diamonds
       </button>
     </nav>
     <div class="hpills">
@@ -404,54 +448,50 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px 24p
 
 <main>
 
-<!-- ══════════════════════════════════ MARKET PAGE ══════════════════════════════════ -->
+<!-- ══════════ MARKET ══════════ -->
 <div class="page on" id="page-market">
-  <div class="hero">
-    <h1>Pet Simulator 99 <em>Market</em></h1>
-    <p>Live RAP, supply &amp; market cap. Click any item to view its full price history.</p>
-  </div>
+  <div class="hero"><h1>Pet Simulator 99 <em>Market</em></h1><p>Live RAP, supply &amp; market cap. Click any item for full price history.</p></div>
   <div class="ctrl">
     <div class="sw">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input class="si" id="si" type="text" placeholder="Search name, variant…" autocomplete="off">
     </div>
     <div class="tg" id="vtab">
       <button class="tb on" data-view="grid">
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-          <rect x="0" y="0" width="7" height="7" rx="1.2"/><rect x="9" y="0" width="7" height="7" rx="1.2"/>
-          <rect x="0" y="9" width="7" height="7" rx="1.2"/><rect x="9" y="9" width="7" height="7" rx="1.2"/>
-        </svg>Grid
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="7" height="7" rx="1.2"/><rect x="9" y="0" width="7" height="7" rx="1.2"/><rect x="0" y="9" width="7" height="7" rx="1.2"/><rect x="9" y="9" width="7" height="7" rx="1.2"/></svg>Grid
       </button>
       <button class="tb" data-view="list">
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-          <rect x="0" y="1" width="16" height="2.5" rx="1"/>
-          <rect x="0" y="6.5" width="16" height="2.5" rx="1"/>
-          <rect x="0" y="12" width="16" height="2.5" rx="1"/>
-        </svg>List
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="1" width="16" height="2.5" rx="1"/><rect x="0" y="6.5" width="16" height="2.5" rx="1"/><rect x="0" y="12" width="16" height="2.5" rx="1"/></svg>List
       </button>
     </div>
   </div>
   <div class="cats" id="cats"></div>
+  <!-- Variant filters: Type row + Shiny row (independent) -->
   <div class="vfilts">
-    <span class="vfilt-lbl">Variant:</span>
-    <button class="vb on"     data-v="all">All</button>
-    <button class="vb"        data-v="normal">Normal</button>
-    <button class="vb vb-gld" data-v="golden">✦ Golden</button>
-    <button class="vb vb-rb"  data-v="rainbow">🌈 Rainbow</button>
-    <button class="vb vb-sh"  data-v="shiny">✨ Shiny</button>
+    <div class="vfilt-row">
+      <span class="vfilt-lbl">Type:</span>
+      <button class="vb on"     data-vtype="all">All</button>
+      <button class="vb"        data-vtype="normal">Normal</button>
+      <button class="vb vb-gld" data-vtype="golden">✦ Golden</button>
+      <button class="vb vb-rb"  data-vtype="rainbow">🌈 Rainbow</button>
+    </div>
+    <div class="vfilt-row">
+      <span class="vfilt-lbl">Shiny:</span>
+      <button class="vb on" data-shiny="all">All</button>
+      <button class="vb vb-sh" data-shiny="shiny">✨ Shiny Only</button>
+      <button class="vb" data-shiny="no-shiny">✗ No Shiny</button>
+    </div>
   </div>
   <div class="srt">
     <span class="srt-lbl">Sort:</span>
     <div class="srt-btns">
-      <button class="sb on"  data-sort="rap-desc">RAP ↓</button>
-      <button class="sb"     data-sort="rap-asc">RAP ↑</button>
-      <button class="sb"     data-sort="exists-desc">Supply ↓</button>
-      <button class="sb"     data-sort="mcap-desc">Mkt Cap ↓</button>
-      <button class="sb"     data-sort="chg24-desc">24h % ↓</button>
-      <button class="sb"     data-sort="chg24-asc">24h % ↑</button>
-      <button class="sb"     data-sort="name-asc">A – Z</button>
+      <button class="sb on" data-sort="rap-desc">RAP ↓</button>
+      <button class="sb"    data-sort="rap-asc">RAP ↑</button>
+      <button class="sb"    data-sort="exists-desc">Supply ↓</button>
+      <button class="sb"    data-sort="mcap-desc">Mkt Cap ↓</button>
+      <button class="sb"    data-sort="chg24-desc">24h % ↓</button>
+      <button class="sb"    data-sort="chg24-asc">24h % ↑</button>
+      <button class="sb"    data-sort="name-asc">A – Z</button>
     </div>
     <div class="rct" id="rct"></div>
   </div>
@@ -459,41 +499,97 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px 24p
   <div class="pgbar" id="pgbar"></div>
 </div>
 
-<!-- ══════════════════════════════════ ANALYTICS PAGE ══════════════════════════════════ -->
-<div class="page" id="page-analytics">
+<!-- ══════════ HATCH FEED ══════════ -->
+<div class="page" id="page-hatch">
   <div class="hero">
-    <h1>Market <em>Analytics</em></h1>
-    <p>Deep market data for serious traders. History builds over time as snapshots accumulate.</p>
+    <h1><em>Hatch Feed</em></h1>
+    <p>Real-time hatch activity for Huge &amp; Titanic pets. Polls the exists API every 30 seconds.</p>
   </div>
 
-  <!-- Stat cards -->
-  <div class="stat-row" id="stat-row"></div>
-
-  <!-- Top Movers -->
-  <div class="sec-hdr">Top Movers <span>24h RAP change</span></div>
-  <div class="movers-wrap" id="movers-wrap">
-    <div class="no-hist-msg">Accumulating history data — check back after a few snapshots.</div>
-  </div>
-
-  <!-- Huge Inflation Tracker -->
-  <div class="sec-hdr">Huge Inflation Tracker <span>Total exists of all Huges over time</span></div>
-  <div class="huge-wrap">
-    <div class="huge-chart-box"><canvas id="huge-chart"></canvas></div>
-    <div class="huge-table">
-      <div class="huge-table-hdr">
-        <div>Pet</div>
-        <div style="text-align:right">Exists</div>
-        <div style="text-align:right">RAP</div>
-        <div class="hth-vel" style="text-align:right">24h Δ Exists</div>
-        <div class="hth-spark" style="text-align:right">Trend</div>
-      </div>
-      <div id="huge-table-body"></div>
+  <div class="hatch-header">
+    <div class="window-sel">
+      <span class="window-lbl">Window:</span>
+      <button class="wb on" data-w="300">5 min</button>
+      <button class="wb"    data-w="900">15 min</button>
+      <button class="wb"    data-w="3600">1 hr</button>
+      <button class="wb"    data-w="21600">6 hr</button>
+      <button class="wb"    data-w="86400">24 hr</button>
+    </div>
+    <div class="type-sel">
+      <span class="type-lbl">Show:</span>
+      <button class="wb on" data-htype="both">All</button>
+      <button class="wb"    data-htype="huge">Huge only</button>
+      <button class="wb"    data-htype="titanic">Titanic only</button>
+    </div>
+    <div class="hatch-status">
+      <div id="hatch-live-ind" class="hatch-waiting">⏳ Loading…</div>
+      <div class="hatch-ts" id="hatch-ts"></div>
     </div>
   </div>
 
-  <!-- Scarcity Index -->
-  <div class="sec-hdr">Scarcity Index <span>Pets Only — highest RAP relative to supply</span></div>
+  <div class="hatch-summary" id="hatch-summary"></div>
+  <div class="hatch-chart-wrap"><canvas id="hatch-rate-chart"></canvas></div>
+  <div id="hatch-feed-body"></div>
+</div>
+
+<!-- ══════════ ANALYTICS ══════════ -->
+<div class="page" id="page-analytics">
+  <div class="hero"><h1>Market <em>Analytics</em></h1><p>Deep market data for serious traders. History builds as worker snapshots accumulate.</p></div>
+  <div class="stat-row" id="stat-row"></div>
+  <div class="sec-hdr">Top Movers <span>24h RAP change</span></div>
+  <div class="movers-wrap" id="movers-wrap"><div class="no-hist-msg">Accumulating history — check back after a few snapshots.</div></div>
+  <div class="sec-hdr">Huge Inflation Tracker <span>Total Huge supply over time</span></div>
+  <div class="huge-wrap">
+    <div class="huge-chart-box"><canvas id="huge-chart"></canvas></div>
+    <div class="huge-table">
+      <div class="huge-table-hdr"><div>Pet</div><div style="text-align:right">Exists</div><div style="text-align:right">RAP</div><div class="hth-vel" style="text-align:right">24h Δ Supply</div><div class="hth-spark" style="text-align:right">Trend</div></div>
+      <div id="huge-table-body"></div>
+    </div>
+  </div>
+  <div class="sec-hdr">Scarcity Index <span>Pets — highest RAP relative to supply</span></div>
   <div class="scarcity-grid" id="scarcity-grid"></div>
+</div>
+
+
+<!-- DIAMONDS PAGE -->
+<div class="page" id="page-diamonds">
+  <div class="hero">
+    <h1>💎 <em>Diamond Economy</em></h1>
+    <p>Diamonds are the native PS99 currency. RAP values <em>are</em> diamond prices. Track the total diamond supply, inflation rate, and exact diamond cost of every Huge and Titanic pet.</p>
+  </div>
+  <div class="diam-hero-grid" id="diam-stat-row"></div>
+  <div class="diam-charts">
+    <div class="diam-chart-panel">
+      <div class="dcp-title">Total Diamond Circulation</div>
+      <div class="dcp-sub">Total supply of the Diamonds currency item across all tiers</div>
+      <div class="dcp-canvas"><canvas id="diam-supply-chart"></canvas></div>
+    </div>
+    <div class="diam-chart-panel">
+      <div class="dcp-title">Average Huge RAP</div>
+      <div class="dcp-sub">Mean diamond price of all normal Huge pets over time</div>
+      <div class="dcp-canvas"><canvas id="diam-huge-chart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec-hdr">Huge Prices in 💎 <span>RAP = diamonds · sorted by price</span></div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="hd-sort-btns">
+    <button class="sb on" data-hdsort="rap-desc">Price ↓</button>
+    <button class="sb"    data-hdsort="rap-asc">Price ↑</button>
+    <button class="sb"    data-hdsort="supply-desc">Supply ↓</button>
+    <button class="sb"    data-hdsort="chg24-desc">24h % ↓</button>
+    <button class="sb"    data-hdsort="name-asc">A – Z</button>
+  </div>
+  <div class="hd-table">
+    <div class="hd-table-hdr">
+      <div></div>
+      <div>Pet</div>
+      <div style="text-align:right">💎 Price</div>
+      <div class="hdth-pct" style="text-align:right">24h %</div>
+      <div class="hdth-supply" style="text-align:right">Supply</div>
+    </div>
+    <div id="diam-huge-body"></div>
+  </div>
+  <div class="pgbar" id="hd-pgbar"></div>
 </div>
 
 </main>
@@ -507,6 +603,7 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px 24p
       <div class="minf">
         <div class="mnam"  id="mnam"></div>
         <div class="mbdgs" id="mbdgs"></div>
+        <div class="mdesc" id="mdesc" style="display:none"></div>
         <div class="mstats" id="mstats"></div>
       </div>
     </div>
@@ -518,137 +615,201 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px 24p
 </div>
 
 <script>
-/* ═══════════════════ CONSTANTS ════════════════════ */
-const API_PETS   = 'https://ps99.biggamesapi.io/api/collection/Pets';
-const BG_IMG     = 'https://ps99.biggamesapi.io/image/';
-const PER_PAGE   = 48;
-const REFRESH_MS = 5 * 60 * 1000;
-const WORKER_URL = 'https://ps99rap-worker.thomasmerta.workers.dev';
+/* ══════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════ */
+const API_PETS    = 'https://ps99.biggamesapi.io/api/collection/Pets';
+const API_EXISTS  = 'https://ps99.biggamesapi.io/api/exists'; // used only by worker
+const BG_IMG      = 'https://ps99.biggamesapi.io/image/';
+const PER_PAGE    = 48;
+const REFRESH_MS  = 5 * 60 * 1000;
+const HATCH_MS    = 5 * 60 * 1000;        // re-fetch hatch data from worker every 5 min
+const WORKER_URL  = 'https://ps99rap-worker.thomasmerta.workers.dev';
 
-/* ═══════════════════ STATE ════════════════════ */
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
 const S = {
-  items: [], pets: {}, hist: [],
-  view:'grid', sort:'rap-desc', cat:'All', variant:'all', q:'',
-  page: 1, filtered: [],
+  items:[], pets:{}, hist:[], hist7d:[],
+  view:'grid', sort:'rap-desc', cat:'All',
+  variantType:'all',  // all | normal | golden | rainbow
+  shinyFilter:'all',  // 'all' | 'shiny' | 'no-shiny'
+  q:'', page:1, filtered:[],
 };
 
-/* ═══════════════════ LOADER ════════════════════ */
+// Hatch feed state
+const H = {
+  snapshots: [],  // [{ts, d:{mergeKey: exists}}] from worker hatch-buffer
+  petMeta:   {},  // mergeKey → {id, pt, tn, sh}
+  windowSec: 300, // default 5 min (data is at 5-min intervals)
+  htype:     'both',
+  rateChart: null,
+};
+
+/* ══════════════════════════════════════════
+   LOADER
+══════════════════════════════════════════ */
 function prog(p,m){ document.getElementById('ldp').style.width=p+'%'; if(m) document.getElementById('ldm').textContent=m; }
 
-/* ═══════════════════ MERGE RAP + EXISTS ════════════════════ */
+/* ══════════════════════════════════════════
+   MERGE
+══════════════════════════════════════════ */
 function mergeKey(d){ const c=d.configData; return `${d.category}|${c.id}|${c.pt||0}|${c.tn||0}|${c.sh?1:0}`; }
-function mergeData(rapArr, existsArr){
-  const map = new Map();
-  for (const d of rapArr)    map.set(mergeKey(d), {key:mergeKey(d),category:d.category,configData:d.configData,rap:d.value,exists:null});
-  for (const d of existsArr){ const k=mergeKey(d); if(map.has(k)) map.get(k).exists=d.value; else map.set(k,{key:k,category:d.category,configData:d.configData,rap:null,exists:d.value}); }
+function mergeData(rapArr,existsArr){
+  const map=new Map();
+  for(const d of rapArr) map.set(mergeKey(d),{key:mergeKey(d),category:d.category,configData:d.configData,rap:d.value,exists:null});
+  for(const d of existsArr){ const k=mergeKey(d); if(map.has(k)) map.get(k).exists=d.value; else map.set(k,{key:k,category:d.category,configData:d.configData,rap:null,exists:d.value}); }
   return [...map.values()];
 }
 
-/* ═══════════════════ HISTORY ════════════════════ */
+/* ══════════════════════════════════════════
+   HISTORY
+══════════════════════════════════════════ */
+// S.hist = 24h snapshots (5-min)
+// S.hist7d = 7d snapshots (1-hr) — used for 7d % changes
 async function loadHistory(){
   try{
-    const res=await fetch(WORKER_URL+'/history');
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const json=await res.json();
-    S.hist=json.data||[];
-    const days=json.retention_days||'?';
-    document.getElementById('h-snaps').textContent=S.hist.length+' snapshots ('+days+'d)';
+    const [r24, r7] = await Promise.all([
+      fetch(WORKER_URL+'/history').then(r=>r.ok?r.json():Promise.reject(r.status)),
+      fetch(WORKER_URL+'/history?range=7d').then(r=>r.ok?r.json():{data:[]}),
+    ]);
+    S.hist   = r24.data || [];
+    S.hist7d = r7.data  || [];
+    document.getElementById('h-snaps').textContent = S.hist.length+' snapshots';
   }catch(e){
-    console.warn('[history]',e.message);
-    S.hist=[];
+    console.warn('[history]',e);
+    S.hist=[]; S.hist7d=[];
     document.getElementById('h-snaps').textContent='history unavailable';
   }
 }
-
-function hDataFor(prefix, key){
-  return S.hist.map(s=>({ts:s.ts,v:s.d[prefix+key]})).filter(p=>p.v!==undefined);
+function hDataFor(prefix,key){
+  // Use 7d buffer for longer-range queries, 24h for recent
+  const combined = [...S.hist7d, ...S.hist]
+    .sort((a,b)=>a.ts-b.ts)
+    .filter((s,i,arr)=>i===0||s.ts-arr[i-1].ts>60000); // dedup: keep if >1min apart
+  return combined.map(s=>({ts:s.ts,v:s.d[prefix+key]})).filter(p=>p.v!==undefined);
 }
 
-/* ═══════════════════ % CHANGE ════════════════════ */
+/* ══════════════════════════════════════════
+   % CHANGE (from worker history)
+══════════════════════════════════════════ */
 function closestSnap(hoursAgo){
-  if(!S.hist.length) return null;
+  // Search 7d buffer for older lookups, 24h for recent
+  const pool = hoursAgo > 20 ? [...S.hist7d, ...S.hist] : S.hist;
+  if(!pool.length) return null;
   const target=Date.now()-hoursAgo*3600000;
-  let best=null, bestDiff=Infinity;
-  for(const s of S.hist){ const d=Math.abs(s.ts-target); if(d<bestDiff){bestDiff=d;best=s;} }
-  // Only return if within 50% of requested window (avoids using wrong-era snapshots)
-  if(bestDiff > hoursAgo*3600000*0.5+300000) return null;
+  let best=null,bestDiff=Infinity;
+  for(const s of pool){ const d=Math.abs(s.ts-target); if(d<bestDiff){bestDiff=d;best=s;} }
+  // Allow up to 2x the requested window as tolerance
+  if(bestDiff>hoursAgo*3600000*2+600000) return null;
   return best;
 }
-
-function pctChange(item, prefix, hoursAgo){
-  const cur = prefix==='r|' ? item.rap : item.exists;
-  if(cur==null) return null;
+function pctChange(item,prefix,hoursAgo){
+  const cur=prefix==='r|'?item.rap:item.exists; if(cur==null) return null;
   const snap=closestSnap(hoursAgo); if(!snap) return null;
-  const old=snap.d[prefix+item.key];
-  if(old==null||old===0) return null;
+  const old=snap.d[prefix+item.key]; if(old==null||old===0) return null;
   return ((cur-old)/old)*100;
 }
-
-function fmtPct(p){
-  if(p==null) return null;
-  return (p>=0?'+':'')+p.toFixed(2)+'%';
-}
-
-function pctChip(p, label){
+function fmtPct(p){ if(p==null)return null; return (p>=0?'+':'')+p.toFixed(2)+'%'; }
+function pctChip(p,label){
   if(p==null) return `<span class="pct nil">${label} —</span>`;
-  const cls=p>0?'up':p<0?'dn':'nil';
-  return `<span class="pct ${cls}">${label} ${fmtPct(p)}</span>`;
+  return `<span class="pct ${p>0?'up':p<0?'dn':'nil'}">${label} ${fmtPct(p)}</span>`;
 }
 
-/* ═══════════════════ MARKET CAP ════════════════════ */
-function marketCap(item){ return (item.rap!=null && item.exists!=null) ? item.rap*item.exists : null; }
-
-/* ═══════════════════ HELPERS ════════════════════ */
-function aid(rbx){ if(!rbx) return null; const m=rbx.match(/\d+/); return m?m[0]:null; }
-function petImg(name,pt){ const p=S.pets[name]; if(!p) return null; const id=(pt===1&&p.goldenId)?p.goldenId:p.thumbId; return id?BG_IMG+id:null; }
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function marketCap(item){ return(item.rap!=null&&item.exists!=null)?item.rap*item.exists:null; }
+function aid(rbx){ if(!rbx)return null; const m=rbx.match(/\d+/); return m?m[0]:null; }
+function petImg(name,pt){ const p=S.pets[name]; if(!p)return null; const id=(pt===1&&p.goldenId)?p.goldenId:p.thumbId; return id?BG_IMG+id:null; }
 function fmt(n){
-  if(n==null) return '—';
-  if(n>=1e12) return (n/1e12).toFixed(2).replace(/\.?0+$/,'')+'T';
-  if(n>=1e9)  return (n/1e9).toFixed(2).replace(/\.?0+$/,'')+'B';
-  if(n>=1e6)  return (n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';
-  if(n>=1e3)  return (n/1e3).toFixed(1).replace(/\.?0+$/,'')+'K';
+  if(n==null)return '—';
+  if(n>=1e12)return(n/1e12).toFixed(2).replace(/\.?0+$/,'')+'T';
+  if(n>=1e9) return(n/1e9).toFixed(2).replace(/\.?0+$/,'')+'B';
+  if(n>=1e6) return(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';
+  if(n>=1e3) return(n/1e3).toFixed(1).replace(/\.?0+$/,'')+'K';
   return n.toLocaleString();
 }
 function fdate(ts){ const d=new Date(ts); return d.toLocaleDateString([],{month:'short',day:'numeric'})+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+function ftime(ts){ return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function vLabel(pt,sh){ const p=[]; if(pt===2)p.push('Rainbow');else if(pt===1)p.push('Golden');if(sh)p.push('Shiny');return p.join(' '); }
-function vBadges(pt,sh,tn){ let h=''; if(pt===2)h+='<span class="bdg b-rb">🌈 Rainbow</span>';else if(pt===1)h+='<span class="bdg b-gld">✦ Golden</span>';if(sh)h+='<span class="bdg b-sh">✨ Shiny</span>';if(tn)h+=`<span class="bdg b-tn">T${tn}</span>`;return h; }
-function vOverlay(pt,sh){ let h='';if(pt===2)h+='<div class="ov-rb"></div>';else if(pt===1)h+='<div class="ov-gld"></div>';if(sh)h+='<div class="ov-sh"></div>';return h; }
-function catCls(cat){ return {Pet:'cc-Pet',Egg:'cc-Egg',Misc:'cc-Misc',Enchant:'cc-Enchant',Potion:'cc-Potion',Lootbox:'cc-Lootbox',Hoverboard:'cc-Hoverboard',Fruit:'cc-Fruit'}[cat]||'cc-def'; }
-function cEmoji(cat){ return {Pet:'🐾',Egg:'🥚',Misc:'📦',Enchant:'✨',Potion:'🧪',Lootbox:'🎁',Hoverboard:'🛹',Fruit:'🍎'}[cat]||'◆'; }
+
+// Variant helpers
+function vLabel(pt,sh){
+  const p=[]; if(pt===2)p.push('Rainbow');else if(pt===1)p.push('Golden');
+  if(sh)p.push('Shiny'); return p.join(' ');
+}
+function vLabelHtml(pt, sh) {
+  const parts = [];
+  if(pt===2) parts.push('<span style="color:#cc88ff;font-weight:600">Rainbow</span>');
+  else if(pt===1) parts.push('<span style="color:#ffd700;font-weight:600">Golden</span>');
+  if(sh) parts.push('<span style="color:#d0e4ff;font-weight:600">Shiny</span>');
+  return parts.join(' ');
+}
+function petDesc(item) {
+  if (item.category !== 'Pet') return '';
+  return S.pets[item.configData.id]?.desc || '';
+}
+function vBadges(pt,sh,tn){
+  let h='';
+  if(pt===2)h+='<span class="bdg b-rb">🌈 Rainbow</span>';
+  else if(pt===1)h+='<span class="bdg b-gld">✦ Golden</span>';
+  if(sh)h+='<span class="bdg b-sh">✨ Shiny</span>';
+  if(tn)h+=`<span class="bdg b-tn">T${tn}</span>`;
+  return h;
+}
+function vOverlay(pt,sh){
+  let h='';
+  if(pt===2)h+='<div class="ov-rb"></div>';
+  else if(pt===1)h+='<div class="ov-gld"></div>';
+  if(sh)h+='<div class="ov-sh"></div>';
+  return h;
+}
+function catCls(cat){ return{Pet:'cc-Pet',Egg:'cc-Egg',Misc:'cc-Misc',Enchant:'cc-Enchant',Potion:'cc-Potion',Lootbox:'cc-Lootbox',Hoverboard:'cc-Hoverboard',Fruit:'cc-Fruit'}[cat]||'cc-def'; }
+function cEmoji(cat){ return{Pet:'🐾',Egg:'🥚',Misc:'📦',Enchant:'✨',Potion:'🧪',Lootbox:'🎁',Hoverboard:'🛹',Fruit:'🍎'}[cat]||'◆'; }
 
 function spark(pts,w=200,h=22){
-  if(!pts||pts.length<2) return '';
+  if(!pts||pts.length<2)return '';
   const vs=pts.map(p=>p.v),mn=Math.min(...vs),mx=Math.max(...vs),rng=mx-mn||1;
-  const xs=vs.map((_,i)=>(i/(vs.length-1))*w), ys=vs.map(v=>h-((v-mn)/rng)*(h-4)-2);
+  const xs=vs.map((_,i)=>(i/(vs.length-1))*w),ys=vs.map(v=>h-((v-mn)/rng)*(h-4)-2);
   const path=xs.map((x,i)=>`${i===0?'M':'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
   const up=vs[vs.length-1]>=vs[0];
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="none" stroke="${up?'#2ecc71':'#e74c3c'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
-/* ═══════════════════ FILTER + SORT ════════════════════ */
+/* ══════════════════════════════════════════
+   FILTER + SORT
+══════════════════════════════════════════ */
 function recompute(){
   let d=S.items;
   if(S.cat!=='All') d=d.filter(x=>x.category===S.cat);
-  if(S.variant==='golden') d=d.filter(x=>x.configData.pt===1);
-  else if(S.variant==='rainbow') d=d.filter(x=>x.configData.pt===2);
-  else if(S.variant==='shiny')   d=d.filter(x=>!!x.configData.sh);
-  else if(S.variant==='normal')  d=d.filter(x=>!x.configData.pt&&!x.configData.sh);
+
+  // Type filter (pt axis — mutually exclusive)
+  if(S.variantType==='normal')  d=d.filter(x=>!x.configData.pt);
+  else if(S.variantType==='golden')  d=d.filter(x=>x.configData.pt===1);
+  else if(S.variantType==='rainbow') d=d.filter(x=>x.configData.pt===2);
+
+  // Shiny filter (independent layer)
+  if(S.shinyFilter==='shiny') d=d.filter(x=>!!x.configData.sh);
+  else if(S.shinyFilter==='no-shiny') d=d.filter(x=>!x.configData.sh);
+
   if(S.q){ const q=S.q.toLowerCase(); d=d.filter(x=>x.configData.id.toLowerCase().includes(q)||x.category.toLowerCase().includes(q)||vLabel(x.configData.pt,x.configData.sh).toLowerCase().includes(q)); }
 
   const MC=x=>marketCap(x)||0;
   const CHG24=x=>{ const p=pctChange(x,'r|',24); return p!=null?p:-Infinity; };
-  if      (S.sort==='rap-desc')    d=[...d].sort((a,b)=>(b.rap||0)-(a.rap||0));
-  else if (S.sort==='rap-asc')     d=[...d].sort((a,b)=>(a.rap||0)-(b.rap||0));
-  else if (S.sort==='exists-desc') d=[...d].sort((a,b)=>(b.exists||0)-(a.exists||0));
-  else if (S.sort==='mcap-desc')   d=[...d].sort((a,b)=>MC(b)-MC(a));
-  else if (S.sort==='chg24-desc')  d=[...d].sort((a,b)=>CHG24(b)-CHG24(a));
-  else if (S.sort==='chg24-asc')   d=[...d].sort((a,b)=>CHG24(a)-CHG24(b));
+  if     (S.sort==='rap-desc')    d=[...d].sort((a,b)=>(b.rap||0)-(a.rap||0));
+  else if(S.sort==='rap-asc')     d=[...d].sort((a,b)=>(a.rap||0)-(b.rap||0));
+  else if(S.sort==='exists-desc') d=[...d].sort((a,b)=>(b.exists||0)-(a.exists||0));
+  else if(S.sort==='mcap-desc')   d=[...d].sort((a,b)=>MC(b)-MC(a));
+  else if(S.sort==='chg24-desc')  d=[...d].sort((a,b)=>CHG24(b)-CHG24(a));
+  else if(S.sort==='chg24-asc')   d=[...d].sort((a,b)=>CHG24(a)-CHG24(b));
   else d=[...d].sort((a,b)=>a.configData.id.localeCompare(b.configData.id));
   S.filtered=d; S.page=1;
 }
 
-/* ═══════════════════ RENDER CATS ════════════════════ */
+/* ══════════════════════════════════════════
+   RENDER CATS
+══════════════════════════════════════════ */
 function renderCats(){
   const counts={};
   S.items.forEach(d=>counts[d.category]=(counts[d.category]||0)+1);
@@ -657,102 +818,90 @@ function renderCats(){
     <button class="cb${c===S.cat?' on':''}" data-cat="${esc(c)}">
       ${esc(c)}${c!=='All'?`<span class="cn">${counts[c]}</span>`:''}
     </button>`).join('');
-  // ── FIX: click handler calls renderCats() to visually update active state ──
   document.getElementById('cats').querySelectorAll('.cb').forEach(b=>
     b.addEventListener('click',()=>{ S.cat=b.dataset.cat; recompute(); renderCats(); renderItems(); }));
 }
 
-/* ═══════════════════ ICON HTML ════════════════════ */
+/* ══════════════════════════════════════════
+   ICON HTML
+══════════════════════════════════════════ */
 function iconHtml(item,cls){
-  const cd=item.configData, isPet=item.category==='Pet';
+  const cd=item.configData,isPet=item.category==='Pet';
   const url=isPet?petImg(cd.id,cd.pt):null;
   if(isPet&&url) return `<img class="${cls}" src="${url}" loading="lazy">${vOverlay(cd.pt,cd.sh)}`;
   return `<span class="pp">${cEmoji(item.category)}</span>${vOverlay(cd.pt,cd.sh)}`;
 }
 
-/* ═══════════════════ CARD ════════════════════ */
+/* ══════════════════════════════════════════
+   CARD / ROW
+══════════════════════════════════════════ */
 function mkCard(item,i){
-  const cd=item.configData, c=catCls(item.category);
-  const isPet=item.category==='Pet';
+  const cd=item.configData,c=catCls(item.category);
   const mc=marketCap(item);
-  const vl=vLabel(cd.pt,cd.sh);
-  const rapPts=hDataFor('r|',item.key), sp=spark(rapPts,196,22);
-  const p1h=pctChange(item,'r|',1), p24=pctChange(item,'r|',24), p7d=pctChange(item,'r|',168);
-
-  return `<div class="card ${c}" style="animation-delay:${Math.min(i,30)*8}ms" data-idx="${i}">
-    ${isPet?`<div class="iw">${iconHtml(item,'pi')}</div>`:''}
-    <div class="cbody">
-      <div class="cmeta"><span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt,cd.sh,cd.tn)}</div>
-      <div class="cname">${esc(cd.id)}${vl?` <small style="color:var(--t3);font-weight:400">${esc(vl)}</small>`:''}</div>
-      <div class="cvals">
-        <div class="cval-box${item.rap==null?' no-data':''}">
-          <div class="cval-lbl">RAP</div>
-          <div class="cval-num">${fmt(item.rap)}</div>
-        </div>
-        <div class="cval-box exists${item.exists==null?' no-data':''}">
-          <div class="cval-lbl">Supply</div>
-          <div class="cval-num">${fmt(item.exists)}</div>
-        </div>
-        <div class="cval-box mcap${mc==null?' no-data':''}">
-          <div class="cval-lbl">Mkt Cap</div>
-          <div class="cval-num">${fmt(mc)}</div>
-        </div>
-      </div>
-      <div class="card-pcts">
-        ${pctChip(p1h,'1h')}${pctChip(p24,'24h')}${pctChip(p7d,'7d')}
-      </div>
-      ${sp?`<div class="spark-wrap">${sp}</div>`:`<div class="no-spark"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Recording…</div>`}
-    </div>
-  </div>`;
+  const rapPts=hDataFor('r|',item.key),sp=spark(rapPts,196,22);
+  const p1h=pctChange(item,'r|',1),p24=pctChange(item,'r|',24),p7d=pctChange(item,'r|',168);
+  const desc=petDesc(item);
+  const varHtml=(cd.pt||cd.sh)?(' <small>'+vLabelHtml(cd.pt,cd.sh)+'</small>'):'';
+  const descHtml=desc?('<div class="card-desc">'+esc(desc)+'</div>'):'';
+  const iconArea=item.category==='Pet'?('<div class="iw">'+iconHtml(item,'pi')+'</div>'):'';
+  const sparkHtml=sp?('<div class="spark-wrap">'+sp+'</div>'):'<div class="no-spark"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Recording…</div>';
+  return '<div class="card '+c+'" style="animation-delay:'+Math.min(i,30)*8+'ms" data-idx="'+i+'">'
+    +iconArea
+    +'<div class="cbody">'
+    +'<div class="cmeta"><span class="ctag '+c+'">'+esc(item.category)+'</span>'+vBadges(cd.pt,cd.sh,cd.tn)+'</div>'
+    +'<div class="cname">'+esc(cd.id)+varHtml+'</div>'
+    +descHtml
+    +'<div class="cvals">'
+    +'<div class="cval-box'+(item.rap==null?' no-data':'')+'"><div class="cval-lbl">RAP</div><div class="cval-num">'+fmt(item.rap)+'</div></div>'
+    +'<div class="cval-box exists'+(item.exists==null?' no-data':'')+'"><div class="cval-lbl">Supply</div><div class="cval-num">'+fmt(item.exists)+'</div></div>'
+    +'<div class="cval-box mcap'+(mc==null?' no-data':'')+'"><div class="cval-lbl">Mkt Cap</div><div class="cval-num">'+fmt(mc)+'</div></div>'
+    +'</div>'
+    +'<div class="card-pcts">'+pctChip(p1h,'1h')+pctChip(p24,'24h')+pctChip(p7d,'7d')+'</div>'
+    +sparkHtml
+    +'</div></div>';
 }
 
-/* ═══════════════════ ROW ════════════════════ */
 function mkRow(item,i){
-  const cd=item.configData, c=catCls(item.category);
+  const cd=item.configData,c=catCls(item.category);
   const mc=marketCap(item);
-  const vl=vLabel(cd.pt,cd.sh);
-  const rapPts=hDataFor('r|',item.key), sp=spark(rapPts,58,20);
-  const p24=pctChange(item,'r|',24), p7d=pctChange(item,'r|',168);
-
-  return `<div class="row" style="animation-delay:${Math.min(i,30)*5}ms" data-idx="${i}">
-    <div class="ri">${iconHtml(item,'pi')}</div>
-    <div class="rcat"><span class="ctag ${c}">${esc(item.category)}</span></div>
-    <div class="rname">${esc(cd.id)}${vl?` <span style="color:var(--t3);font-size:11px">${esc(vl)}</span>`:''}</div>
-    <div class="rbdgs">${vBadges(cd.pt,cd.sh,cd.tn)}</div>
-    <div class="rspark">${sp}</div>
-    <div class="rcol${item.rap==null?' no-data':''}">
-      <span class="rcol-lbl">RAP</span>
-      <span class="rcol-val">${fmt(item.rap)}</span>
-      <div class="rcol-pcts">${pctChip(p24,'24h')}${pctChip(p7d,'7d')}</div>
-    </div>
-    <div class="rcol exists${item.exists==null?' no-data':''}">
-      <span class="rcol-lbl">Supply</span>
-      <span class="rcol-val">${fmt(item.exists)}</span>
-    </div>
-    <div class="rcol mcap${mc==null?' no-data':''}">
-      <span class="rcol-lbl">Mkt Cap</span>
-      <span class="rcol-val">${fmt(mc)}</span>
-    </div>
-  </div>`;
+  const rapPts=hDataFor('r|',item.key),sp=spark(rapPts,56,20);
+  const p24=pctChange(item,'r|',24),p7d=pctChange(item,'r|',168);
+  const desc=petDesc(item);
+  const varHtml=(cd.pt||cd.sh)?(' <small>'+vLabelHtml(cd.pt,cd.sh)+'</small>'):'';
+  const descHtml=desc?('<span style="font-size:9.5px;color:var(--t3);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(desc)+'</span>'):'';
+  return '<div class="row" style="animation-delay:'+Math.min(i,30)*5+'ms" data-idx="'+i+'">'
+    +'<div class="ri">'+iconHtml(item,'pi')+'</div>'
+    +'<div class="rcat"><span class="ctag '+c+'">'+esc(item.category)+'</span></div>'
+    +'<div class="rname" style="display:flex;flex-direction:column;gap:1px">'
+    +'<span>'+esc(cd.id)+varHtml+'</span>'
+    +descHtml
+    +'</div>'
+    +'<div class="rbdgs">'+vBadges(cd.pt,cd.sh,cd.tn)+'</div>'
+    +'<div class="rspark">'+sp+'</div>'
+    +'<div class="rcol'+(item.rap==null?' no-data':'')+'"><span class="rcol-lbl">RAP</span><span class="rcol-val">'+fmt(item.rap)+'</span><div class="rcol-pcts">'+pctChip(p24,'24h')+pctChip(p7d,'7d')+'</div></div>'
+    +'<div class="rcol exists'+(item.exists==null?' no-data':'')+'"><span class="rcol-lbl">Supply</span><span class="rcol-val">'+fmt(item.exists)+'</span></div>'
+    +'<div class="rcol mcap'+(mc==null?' no-data':'')+'"><span class="rcol-lbl">Mkt Cap</span><span class="rcol-val">'+fmt(mc)+'</span></div>'
+    +'</div>';
 }
 
-/* ═══════════════════ RENDER ITEMS ════════════════════ */
+/* ══════════════════════════════════════════
+   RENDER ITEMS + PAGINATION
+══════════════════════════════════════════ */
 function renderItems(){
-  const data=S.filtered, con=document.getElementById('con');
+  const data=S.filtered,con=document.getElementById('con');
   document.getElementById('rct').textContent=data.length.toLocaleString()+' items';
   if(!data.length){ con.className=''; con.innerHTML=`<div class="empty"><div class="ei">🔍</div><p>No items match your filters.</p></div>`; renderPagination(); return; }
-  const start=(S.page-1)*PER_PAGE, slice=data.slice(start,start+PER_PAGE);
+  const start=(S.page-1)*PER_PAGE,slice=data.slice(start,start+PER_PAGE);
   con.className=S.view==='grid'?'grid':'listv';
   con.innerHTML=slice.map((d,i)=>S.view==='grid'?mkCard(d,i):mkRow(d,i)).join('');
   con.querySelectorAll('[data-idx]').forEach(el=>el.addEventListener('click',()=>openModal(data[start+parseInt(el.dataset.idx)])));
   renderPagination();
 }
 
-/* ═══════════════════ PAGINATION ════════════════════ */
 function renderPagination(){
-  const total=S.filtered.length, pages=Math.ceil(total/PER_PAGE), bar=document.getElementById('pgbar');
+  const total=S.filtered.length,pages=Math.ceil(total/PER_PAGE),bar=document.getElementById('pgbar');
   if(pages<=1){bar.innerHTML='';return;}
-  const cur=S.page, btns=[];
+  const cur=S.page,btns=[];
   btns.push(`<button class="pgbtn" data-p="${cur-1}" ${cur===1?'disabled':''}>‹</button>`);
   const show=new Set([1,pages,cur,cur-1,cur+1,cur-2,cur+2].filter(p=>p>=1&&p<=pages));
   let prev=0;
@@ -763,211 +912,283 @@ function renderPagination(){
   bar.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{ S.page=parseInt(b.dataset.p); renderItems(); window.scrollTo({top:0,behavior:'smooth'}); }));
 }
 
-/* ═══════════════════════════════════════════════════
-   ANALYTICS
-═══════════════════════════════════════════════════ */
-let hugeChartInst=null;
+/* ════════════════════════════════════════════════════════
+   HATCH FEED — server-side data from worker /hatch-history
+   5-minute granularity. Shared across all visitors. Persists on refresh.
+════════════════════════════════════════════════════════ */
 
-function renderAnalytics(){
-  renderStatCards();
-  renderMovers();
-  renderHugeTracker();
-  renderScarcity();
+async function loadHatchHistory() {
+  try {
+    const res = await fetch(WORKER_URL + '/hatch-history');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    H.snapshots = json.snapshots || [];
+    H.petMeta   = json.petMeta   || {};
+    const ind = document.getElementById('hatch-live-ind');
+    if (H.snapshots.length > 0) {
+      ind.className = 'hatch-live';
+      ind.innerHTML = '<span class="ldot"></span> ' + H.snapshots.length + ' snapshots';
+    } else {
+      ind.className = 'hatch-waiting';
+      ind.innerHTML = '⏳ No data yet — worker cron hasn\'t run';
+    }
+    document.getElementById('hatch-ts').textContent = H.snapshots.length
+      ? 'Last: ' + ftime(H.snapshots[H.snapshots.length-1].ts) : '';
+  } catch(e) {
+    console.warn('[hatch]', e.message);
+    document.getElementById('hatch-live-ind').innerHTML = '⚠ Could not load hatch data';
+  }
 }
 
-/* ── Stat cards ── */
-function renderStatCards(){
-  const rapItems=S.items.filter(x=>x.rap!=null);
-  const totalMCap=S.items.reduce((s,x)=>s+(marketCap(x)||0),0);
-  const hugeCount=S.items.filter(x=>x.category==='Pet'&&x.configData.id.startsWith('Huge')&&x.exists!=null).reduce((s,x)=>s+x.exists,0);
-  const petCount=S.items.filter(x=>x.category==='Pet').length;
-
-  // 24h movers for mkt sentiment
-  const chgs=S.items.map(x=>pctChange(x,'r|',24)).filter(p=>p!=null);
-  const avgChg=chgs.length?chgs.reduce((a,b)=>a+b,0)/chgs.length:null;
-
-  document.getElementById('stat-row').innerHTML=`
-    <div class="stat-card">
-      <div class="sc-lbl">Total Items</div>
-      <div class="sc-val">${S.items.length.toLocaleString()}</div>
-      <div class="sc-sub">${petCount} pets tracked</div>
-    </div>
-    <div class="stat-card teal">
-      <div class="sc-lbl">Total Market Cap</div>
-      <div class="sc-val">${fmt(totalMCap)}</div>
-      <div class="sc-sub">RAP × Supply across all items</div>
-    </div>
-    <div class="stat-card purple">
-      <div class="sc-lbl">Huges In Existence</div>
-      <div class="sc-val">${fmt(hugeCount)}</div>
-      <div class="sc-sub">Total supply of all Huge pets</div>
-    </div>
-    <div class="stat-card ${avgChg==null?'':avgChg>=0?'grn':''}">
-      <div class="sc-lbl">Avg 24h Change</div>
-      <div class="sc-val" style="color:${avgChg==null?'var(--t3)':avgChg>=0?'var(--grn)':'var(--red)'}">${avgChg==null?'—':(avgChg>=0?'+':'')+avgChg.toFixed(2)+'%'}</div>
-      <div class="sc-sub">${chgs.length} items with history</div>
-    </div>`;
+function hatchDataForKey(key) {
+  return H.snapshots.map(s => ({ts:s.ts, v:s.d[key]})).filter(p => p.v !== undefined);
 }
 
-/* ── Top Movers ── */
-function renderMovers(){
-  const withChg=S.items.map(x=>({item:x,chg:pctChange(x,'r|',24)})).filter(x=>x.chg!=null&&x.item.rap!=null);
-  if(!withChg.length){
-    document.getElementById('movers-wrap').innerHTML=`<div class="no-hist-msg" style="grid-column:1/-1">Not enough history yet. Movers appear after 2+ snapshots are stored.</div>`;
+function hatchDelta(key) {
+  if (H.snapshots.length < 2) return null;
+  const now    = H.snapshots[H.snapshots.length - 1];
+  const wStart = now.ts - H.windowSec * 1000;
+  let oldest = null;
+  for (const s of H.snapshots) { if (s.ts >= wStart) { oldest = s; break; } }
+  if (!oldest || oldest === now) return null;
+  const cur = now.d[key], old = oldest.d[key];
+  if (cur == null || old == null) return null;
+  return cur - old;
+}
+
+function renderHatchFeed() {
+  const now = H.snapshots.length ? H.snapshots[H.snapshots.length - 1] : null;
+  if (!now || H.snapshots.length < 2) {
+    document.getElementById('hatch-summary').innerHTML = '';
+    document.getElementById('hatch-feed-body').innerHTML = `
+      <div class="warming-up">
+        <div class="wu-icon">🥚</div>
+        <p>Waiting for data — the worker cron runs every 5 minutes.</p>
+        <div class="wu-bar"><div class="wu-fill"></div></div>
+        <div class="wu-sub">${H.snapshots.length} snapshot${H.snapshots.length!==1?'s':''} stored so far</div>
+      </div>`;
     return;
   }
-  withChg.sort((a,b)=>b.chg-a.chg);
-  const gainers=withChg.slice(0,6), losers=[...withChg].sort((a,b)=>a.chg-b.chg).slice(0,6);
 
-  function moverList(arr,dir){
-    return arr.map(({item,chg})=>{
-      const cd=item.configData, isPet=item.category==='Pet';
-      const url=isPet?petImg(cd.id,cd.pt):null;
-      const vl=vLabel(cd.pt,cd.sh);
-      const icoHtml=isPet&&url
-        ?`<img class="pi" src="${url}" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2">${vOverlay(cd.pt,cd.sh)}`
-        :`<span class="pp" style="font-size:14px">${cEmoji(item.category)}</span>`;
-      return `<div class="mover-item" data-key="${esc(item.key)}">
-        <div class="mover-ico">${icoHtml}</div>
-        <div class="mover-name">${esc(cd.id)}${vl?` <small style="color:var(--t3)">${esc(vl)}</small>`:''}</div>
-        <div class="mover-val">${fmt(item.rap)}</div>
-        <div class="mover-pct ${dir}">${dir==='up'?'+':''}${chg.toFixed(2)}%</div>
-      </div>`;
-    }).join('');
-  }
+  const allKeys = Object.keys(H.petMeta).filter(k => {
+    const n = H.petMeta[k].id.toLowerCase();
+    if (H.htype==='huge'    && !n.includes('huge'))    return false;
+    if (H.htype==='titanic' && !n.includes('titanic')) return false;
+    return true;
+  });
 
-  document.getElementById('movers-wrap').innerHTML=`
-    <div class="movers-panel">
-      <div class="movers-panel-hdr up">▲ Top Gainers</div>
-      ${moverList(gainers,'up')}
-    </div>
-    <div class="movers-panel">
-      <div class="movers-panel-hdr dn">▼ Top Losers</div>
-      ${moverList(losers,'dn')}
+  const withDelta = allKeys.map(key => ({
+    key, meta: H.petMeta[key], delta: hatchDelta(key)||0, curExists: now.d[key]??null,
+  })).sort((a,b) => b.delta - a.delta);
+
+  const totalHatched = withDelta.reduce((s,x) => s+(x.delta>0?x.delta:0), 0);
+  const activeCount  = withDelta.filter(x => x.delta>0).length;
+  const top = withDelta[0];
+  const wLabel = H.windowSec < 3600 ? (H.windowSec/60)+'m' : (H.windowSec/3600)+'h';
+  const spanMins = Math.round((now.ts - H.snapshots[0].ts) / 60000);
+
+  document.getElementById('hatch-summary').innerHTML = `
+    <div class="hatch-sum-card"><div class="hatch-sum-lbl">Hatched (${wLabel})</div><div class="hatch-sum-val">${totalHatched.toLocaleString()}</div><div class="hatch-sum-sub">across all tracked pets</div></div>
+    <div class="hatch-sum-card"><div class="hatch-sum-lbl">Active Pets</div><div class="hatch-sum-val" style="color:var(--acc)">${activeCount}</div><div class="hatch-sum-sub">with hatches in window</div></div>
+    <div class="hatch-sum-card"><div class="hatch-sum-lbl">Hottest Pet</div><div class="hatch-sum-val" style="color:var(--acc2);font-size:14px;padding-top:3px">${top&&top.delta>0?top.meta.id:'—'}</div><div class="hatch-sum-sub">${top&&top.delta>0?'+'+top.delta.toLocaleString()+' hatched':'no activity'}</div></div>
+    <div class="hatch-sum-card"><div class="hatch-sum-lbl">History</div><div class="hatch-sum-val" style="color:var(--teal)">${H.snapshots.length}</div><div class="hatch-sum-sub">${spanMins} min of data</div></div>`;
+
+  renderHatchRateChart();
+
+  const gridHtml = withDelta.slice(0, 30).map((x,i) => {
+    const {key,meta,delta,curExists} = x;
+    const url = petImg(meta.id, meta.pt);
+    const ico = url
+      ? `<img class="pi" src="${url}" loading="lazy">${vOverlay(meta.pt, meta.sh)}`
+      : `<span class="pp" style="font-size:24px">🐾</span>${vOverlay(meta.pt, meta.sh)}`;
+    const ratePerMin = H.windowSec>0 ? (delta/(H.windowSec/60)).toFixed(1) : 0;
+    return `<div class="feed-card${delta===0?' inactive':''}" data-key="${esc(key)}" style="animation-delay:${i*12}ms">
+      <div class="fc-ico">${ico}</div>
+      <div class="fc-info">
+        <div class="fc-name">${esc(meta.id)}${(meta.pt||meta.sh)?` <small>${vLabelHtml(meta.pt,meta.sh)}</small>`:''}</div>
+        ${delta>0
+          ?`<div class="fc-delta">+${delta.toLocaleString()} <span style="font-size:11px;color:var(--t2);font-weight:400">hatched</span></div><div class="fc-rate">${ratePerMin}/min avg</div>`
+          :`<div class="fc-delta zero">No activity</div>`}
+        <div class="fc-exists">Supply: ${fmt(curExists)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const activeOnly = withDelta.filter(x => x.delta > 0);
+  const tableHtml = activeOnly.map(({key,meta,delta,curExists}) => {
+    const url = petImg(meta.id, meta.pt);
+    const sp  = spark(hatchDataForKey(key), 70, 18);
+    const ratePerMin = H.windowSec>0 ? (delta/(H.windowSec/60)).toFixed(1) : 0;
+    const icoCell = `<div style="width:24px;height:24px;border-radius:4px;overflow:hidden;background:var(--s3);flex-shrink:0;position:relative;display:inline-flex;align-items:center;justify-content:center;">
+      ${url?`<img src="${url}" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2" onerror="this.style.display='none'">`:
+           `<span style="font-size:12px;position:relative;z-index:2">🐾</span>`}
+      ${vOverlay(meta.pt, meta.sh)}
+    </div>`;
+    return `<div class="hatch-trow" data-key="${esc(key)}">
+      <div class="ht-name">${icoCell}<span>${esc(meta.id)}${(meta.pt||meta.sh)?` <small>${vLabelHtml(meta.pt,meta.sh)}</small>`:''}</span></div>
+      <div class="ht-delta${delta===0?' zero':''}">${delta>0?'+'+delta.toLocaleString():delta===0?'—':delta.toLocaleString()}</div>
+      <div class="ht-exists">${fmt(curExists)}</div>
+      <div class="ht-rate">${delta>0?ratePerMin+'/m':''}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('hatch-feed-body').innerHTML = `
+    <div class="feed-grid">${gridHtml}</div>
+    <div class="sec-hdr" style="margin-top:8px">Active Pets <span>hatched at least 1 in selected window</span></div>
+    <div class="hatch-table">
+      <div class="hatch-table-hdr">
+        <div>Pet</div><div style="text-align:right">Hatched (${wLabel})</div>
+        <div style="text-align:right">Total Supply</div><div style="text-align:right">Rate/min</div>
+      </div>${tableHtml}
     </div>`;
 
-  // clicking a mover opens its modal
-  document.querySelectorAll('.mover-item[data-key]').forEach(el=>{
-    el.addEventListener('click',()=>{
-      const item=S.items.find(x=>x.key===el.dataset.key);
-      if(item) openModal(item);
+  document.querySelectorAll('.feed-card[data-key],.hatch-trow[data-key]').forEach(el => {
+    el.addEventListener('click', () => {
+      const meta = H.petMeta[el.dataset.key]; if (!meta) return;
+      const item = S.items.find(x => x.category==='Pet' && x.configData.id===meta.id && (x.configData.pt||0)===meta.pt);
+      if (item) openModal(item);
     });
   });
 }
 
-/* ── Huge Inflation Tracker ── */
-function renderHugeTracker(){
-  const huges=S.items.filter(x=>x.category==='Pet'&&x.configData.id.startsWith('Huge')&&x.configData.pt==null&&!x.configData.sh);
-
-  // Total exists over time
-  if(hugeChartInst){hugeChartInst.destroy();hugeChartInst=null;}
-  if(S.hist.length>=2){
-    const snapTotals=S.hist.map(snap=>{
-      let total=0;
-      for(const h of huges){ const v=snap.d['e|'+h.key]; if(v!=null) total+=v; }
-      return {ts:snap.ts, v:total};
-    }).filter(p=>p.v>0);
-
-    if(snapTotals.length>=2){
-      const ctx=document.getElementById('huge-chart').getContext('2d');
-      const vals=snapTotals.map(p=>p.v), mn=Math.min(...vals), mx=Math.max(...vals);
-      const g=ctx.createLinearGradient(0,0,0,220);
-      g.addColorStop(0,'rgba(78,205,196,.2)'); g.addColorStop(1,'rgba(0,0,0,0)');
-      hugeChartInst=new Chart(ctx,{
-        type:'line',
-        data:{labels:snapTotals.map(p=>fdate(p.ts)),datasets:[{
-          data:vals,borderColor:'#4ecdc4',backgroundColor:g,borderWidth:2,
-          pointRadius:snapTotals.length>40?0:3,pointHoverRadius:5,pointBackgroundColor:'#4ecdc4',
-          fill:true,tension:.35}]},
-        options:{responsive:true,maintainAspectRatio:false,
-          interaction:{intersect:false,mode:'index'},
-          plugins:{legend:{display:false},
-            tooltip:{backgroundColor:'#1b1e28',borderColor:'#2a3050',borderWidth:1,
-              titleColor:'#828ba8',bodyColor:'#4ecdc4',bodyFont:{family:'Space Mono',size:11},
-              callbacks:{label:c=>' Total Huges: '+fmt(c.raw)}}},
-          scales:{
-            x:{ticks:{color:'#474f68',font:{size:9},maxTicksLimit:8,maxRotation:0},grid:{color:'rgba(255,255,255,.03)'}},
-            y:{ticks:{color:'#474f68',font:{family:'Space Mono',size:9},callback:v=>fmt(v)},
-               grid:{color:'rgba(255,255,255,.03)'},min:mn*.998,max:mx*1.002}}}
-      });
+function renderHatchRateChart() {
+  if (H.rateChart) { H.rateChart.destroy(); H.rateChart = null; }
+  if (H.snapshots.length < 3) return;
+  const points = [];
+  for (let i=1; i<H.snapshots.length; i++) {
+    const prev=H.snapshots[i-1], cur=H.snapshots[i];
+    let total = 0;
+    for (const [key, curEx] of Object.entries(cur.d)) {
+      const meta = H.petMeta[key]; if (!meta) continue;
+      const n = meta.id.toLowerCase();
+      if (H.htype==='huge'    && !n.includes('huge'))    continue;
+      if (H.htype==='titanic' && !n.includes('titanic')) continue;
+      const prevEx = prev.d[key];
+      if (prevEx!=null && curEx>prevEx) total += curEx-prevEx;
     }
+    points.push({ts:cur.ts, v:total});
+  }
+  if (points.length < 2) return;
+  const ctx  = document.getElementById('hatch-rate-chart').getContext('2d');
+  const vals = points.map(p=>p.v);
+  H.rateChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: points.map(p=>ftime(p.ts)), datasets: [{
+      data: vals,
+      backgroundColor: vals.map(v=>v>0?'rgba(46,204,113,.55)':'rgba(71,79,104,.35)'),
+      borderColor: vals.map(v=>v>0?'#2ecc71':'#474f68'),
+      borderWidth:1, borderRadius:3 }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ backgroundColor:'#1b1e28',borderColor:'#2a3050',borderWidth:1,
+          titleColor:'#828ba8',bodyColor:'#2ecc71',bodyFont:{family:'Space Mono',size:11},
+          callbacks:{label:c=>' +'+c.raw.toLocaleString()+' hatched'} } },
+      scales:{
+        x:{ticks:{color:'#474f68',font:{size:9},maxTicksLimit:14,maxRotation:0},grid:{color:'rgba(255,255,255,.03)'}},
+        y:{ticks:{color:'#474f68',font:{family:'Space Mono',size:9},callback:v=>fmt(v)},grid:{color:'rgba(255,255,255,.03)'},min:0} } },
+  });
+}
+
+/* ══════════════════════════════════════════
+   ANALYTICS
+══════════════════════════════════════════ */
+let hugeChartInst=null;
+
+function renderAnalytics(){
+  // Stat cards
+  const totalMCap=S.items.reduce((s,x)=>s+(marketCap(x)||0),0);
+  const hugeCount=S.items.filter(x=>x.category==='Pet'&&x.configData.id.startsWith('Huge')&&x.exists!=null).reduce((s,x)=>s+x.exists,0);
+  const petCount=S.items.filter(x=>x.category==='Pet').length;
+  const chgs=S.items.map(x=>pctChange(x,'r|',24)).filter(p=>p!=null);
+  const avgChg=chgs.length?chgs.reduce((a,b)=>a+b,0)/chgs.length:null;
+  document.getElementById('stat-row').innerHTML=`
+    <div class="stat-card"><div class="sc-lbl">Total Items</div><div class="sc-val">${S.items.length.toLocaleString()}</div><div class="sc-sub">${petCount} pets tracked</div></div>
+    <div class="stat-card teal"><div class="sc-lbl">Total Market Cap</div><div class="sc-val">${fmt(totalMCap)}</div><div class="sc-sub">RAP × Supply across all items</div></div>
+    <div class="stat-card purple"><div class="sc-lbl">Huges In Existence</div><div class="sc-val">${fmt(hugeCount)}</div><div class="sc-sub">Total supply of all Huge pets</div></div>
+    <div class="stat-card ${avgChg==null?'':avgChg>=0?'grn':''}"><div class="sc-lbl">Avg 24h Change</div><div class="sc-val" style="color:${avgChg==null?'var(--t3)':avgChg>=0?'var(--grn)':'var(--red)'}">${avgChg==null?'—':(avgChg>=0?'+':'')+avgChg.toFixed(2)+'%'}</div><div class="sc-sub">${chgs.length} items with history</div></div>`;
+
+  // Movers
+  const withChg=S.items.map(x=>({item:x,chg:pctChange(x,'r|',24)})).filter(x=>x.chg!=null&&x.item.rap!=null);
+  if(!withChg.length){
+    document.getElementById('movers-wrap').innerHTML=`<div class="no-hist-msg" style="grid-column:1/-1">Not enough history yet.</div>`;
   } else {
-    const canvas=document.getElementById('huge-chart');
-    const ctx=canvas.getContext('2d');
-    ctx.fillStyle='#474f68'; ctx.font='13px Inter'; ctx.textAlign='center';
-    ctx.fillText('Accumulating data — check back after a few snapshots.',canvas.offsetWidth/2||300,120);
+    withChg.sort((a,b)=>b.chg-a.chg);
+    const gainers=withChg.slice(0,6),losers=[...withChg].sort((a,b)=>a.chg-b.chg).slice(0,6);
+    const moverRow=arr=>arr.map(({item,chg})=>{
+      const cd=item.configData,isPet=item.category==='Pet';
+      const url=isPet?petImg(cd.id,cd.pt):null,vl=vLabel(cd.pt,cd.sh);
+      const ico=isPet&&url?`<img class="pi" src="${url}" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2">${vOverlay(cd.pt,cd.sh)}`:
+        `<span class="pp" style="font-size:14px">${cEmoji(item.category)}</span>`;
+      return `<div class="mover-item" data-key="${esc(item.key)}"><div class="mover-ico">${ico}</div>
+        <div class="mover-name">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
+        <div class="mover-val">${fmt(item.rap)}</div>
+        <div class="mover-pct ${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>`;
+    }).join('');
+    document.getElementById('movers-wrap').innerHTML=`
+      <div class="movers-panel"><div class="movers-panel-hdr up">▲ Top Gainers</div>${moverRow(gainers)}</div>
+      <div class="movers-panel"><div class="movers-panel-hdr dn">▼ Top Losers</div>${moverRow(losers)}</div>`;
+    document.querySelectorAll('.mover-item[data-key]').forEach(el=>el.addEventListener('click',()=>{ const item=S.items.find(x=>x.key===el.dataset.key); if(item)openModal(item); }));
   }
 
-  // Per-huge table rows
+  // Huge tracker
+  if(hugeChartInst){hugeChartInst.destroy();hugeChartInst=null;}
+  const huges=S.items.filter(x=>x.category==='Pet'&&x.configData.id.startsWith('Huge')&&!x.configData.pt&&!x.configData.sh);
+  if(S.hist.length>=2){
+    const totals=S.hist.map(snap=>{ let t=0; for(const h of huges){const v=snap.d['e|'+h.key];if(v!=null)t+=v;} return{ts:snap.ts,v:t}; }).filter(p=>p.v>0);
+    if(totals.length>=2){
+      const ctx=document.getElementById('huge-chart').getContext('2d');
+      const vals=totals.map(p=>p.v),mn=Math.min(...vals),mx=Math.max(...vals);
+      const g=ctx.createLinearGradient(0,0,0,200);g.addColorStop(0,'rgba(78,205,196,.2)');g.addColorStop(1,'rgba(0,0,0,0)');
+      hugeChartInst=new Chart(ctx,{type:'line',data:{labels:totals.map(p=>fdate(p.ts)),datasets:[{data:vals,borderColor:'#4ecdc4',backgroundColor:g,borderWidth:2,pointRadius:totals.length>40?0:3,pointHoverRadius:5,pointBackgroundColor:'#4ecdc4',fill:true,tension:.35}]},
+        options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
+          plugins:{legend:{display:false},tooltip:{backgroundColor:'#1b1e28',borderColor:'#2a3050',borderWidth:1,titleColor:'#828ba8',bodyColor:'#4ecdc4',bodyFont:{family:'Space Mono',size:11},callbacks:{label:c=>' Total: '+fmt(c.raw)}}},
+          scales:{x:{ticks:{color:'#474f68',font:{size:9},maxTicksLimit:8,maxRotation:0},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#474f68',font:{family:'Space Mono',size:9},callback:v=>fmt(v)},grid:{color:'rgba(255,255,255,.03)'},min:mn*.998,max:mx*1.002}}}});
+    }
+  }
   const sorted=[...huges].sort((a,b)=>(b.exists||0)-(a.exists||0)).slice(0,30);
   document.getElementById('huge-table-body').innerHTML=sorted.map(item=>{
-    const cd=item.configData;
-    const url=petImg(cd.id,cd.pt);
-    const exPts=hDataFor('e|',item.key);
-    const vel=pctChange(item,'e|',24);
+    const cd=item.configData,url=petImg(cd.id,cd.pt);
+    const exPts=hDataFor('e|',item.key),vel=pctChange(item,'e|',24);
     const velCls=vel==null?'nil':vel>0?'up':'dn';
-    const sp=spark(exPts,70,18);
     return `<div class="huge-row" data-key="${esc(item.key)}">
-      <div class="hr-name">
-        ${url?`<img src="${url}" onerror="this.style.display='none'">`:'<span style="font-size:13px">🐾</span>'}
-        <span>${esc(cd.id)}</span>
-      </div>
-      <div class="hr-num">${fmt(item.exists)}</div>
-      <div class="hr-rap">${fmt(item.rap)}</div>
+      <div class="hr-name">${url?`<img src="${url}" onerror="this.style.display='none'">`:''}<span>${esc(cd.id)}</span></div>
+      <div class="hr-num">${fmt(item.exists)}</div><div class="hr-rap">${fmt(item.rap)}</div>
       <div class="hr-vel ${velCls}">${vel==null?'—':(vel>0?'+':'')+vel.toFixed(2)+'%'}</div>
-      <div class="hr-spark">${sp}</div>
-    </div>`;
+      <div class="hr-spark">${spark(exPts,70,18)}</div></div>`;
   }).join('');
+  document.querySelectorAll('.huge-row[data-key]').forEach(el=>el.addEventListener('click',()=>{ const item=S.items.find(x=>x.key===el.dataset.key); if(item)openModal(item); }));
 
-  document.querySelectorAll('.huge-row[data-key]').forEach(el=>{
-    el.addEventListener('click',()=>{ const item=S.items.find(x=>x.key===el.dataset.key); if(item) openModal(item); });
-  });
-}
-
-/* ── Scarcity Index (pets only, higher score = more scarce relative to price) ── */
-function renderScarcity(){
+  // Scarcity
   const pets=S.items.filter(x=>x.category==='Pet'&&x.rap!=null&&x.exists!=null&&x.exists>0);
-  if(!pets.length){ document.getElementById('scarcity-grid').innerHTML=`<div class="no-hist-msg">No pet data with both RAP and supply.</div>`; return; }
-  // Score = RAP / log(exists+1) — rewards high RAP with low supply
+  if(!pets.length){ document.getElementById('scarcity-grid').innerHTML=`<div class="no-hist-msg">No pet data.</div>`; return; }
   const scored=pets.map(x=>({item:x,score:x.rap/Math.log10(x.exists+1)}));
   scored.sort((a,b)=>b.score-a.score);
-  const maxScore=scored[0].score;
-  const top=scored.slice(0,24);
-  document.getElementById('scarcity-grid').innerHTML=top.map(({item,score})=>{
-    const cd=item.configData, c=catCls(item.category);
-    const vl=vLabel(cd.pt,cd.sh);
-    const pct=(score/maxScore)*100;
+  const maxS=scored[0].score;
+  document.getElementById('scarcity-grid').innerHTML=scored.slice(0,24).map(({item,score})=>{
+    const cd=item.configData,c=catCls(item.category),vl=vLabel(cd.pt,cd.sh);
     return `<div class="sc-item" data-key="${esc(item.key)}">
       <div class="cmeta">${vBadges(cd.pt,cd.sh,cd.tn)}</div>
-      <div class="sc-name">${esc(cd.id)}${vl?` <small style="color:var(--t3)">${esc(vl)}</small>`:''}</div>
-      <div class="sc-score-bar"><div class="sc-score-fill" style="width:${pct.toFixed(1)}%"></div></div>
-      <div class="sc-nums">
-        <span class="sn-rap">${fmt(item.rap)}</span>
-        <span class="sn-ex">${fmt(item.exists)} supply</span>
-      </div>
-    </div>`;
+      <div class="sc-name">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
+      <div class="sc-score-bar"><div class="sc-score-fill" style="width:${((score/maxS)*100).toFixed(1)}%"></div></div>
+      <div class="sc-nums"><span class="sn-rap">${fmt(item.rap)}</span><span class="sn-ex">${fmt(item.exists)} supply</span></div></div>`;
   }).join('');
-  document.querySelectorAll('.sc-item[data-key]').forEach(el=>{
-    el.addEventListener('click',()=>{ const item=S.items.find(x=>x.key===el.dataset.key); if(item) openModal(item); });
-  });
+  document.querySelectorAll('.sc-item[data-key]').forEach(el=>el.addEventListener('click',()=>{ const item=S.items.find(x=>x.key===el.dataset.key); if(item)openModal(item); }));
 }
 
-/* ═══════════════════ MODAL ════════════════════ */
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
 const charts={};
 function destroyCharts(){ Object.keys(charts).forEach(k=>{charts[k].destroy();delete charts[k];}); }
 
 function buildChart(id,pts,color,labelFn){
-  if(!pts||pts.length<2) return false;
-  const vals=pts.map(p=>p.v), mn=Math.min(...vals), mx=Math.max(...vals);
+  if(!pts||pts.length<2)return false;
+  const vals=pts.map(p=>p.v),mn=Math.min(...vals),mx=Math.max(...vals);
   const ctx=document.getElementById(id).getContext('2d');
-  const g=ctx.createLinearGradient(0,0,0,160);
-  g.addColorStop(0,color+'30'); g.addColorStop(1,'rgba(0,0,0,0)');
-  charts[id]=new Chart(ctx,{type:'line',data:{labels:pts.map(p=>fdate(p.ts)),datasets:[{
-    data:vals,borderColor:color,backgroundColor:g,borderWidth:2,
-    pointRadius:pts.length>25?0:3,pointHoverRadius:4,pointBackgroundColor:color,fill:true,tension:.35}]},
+  const g=ctx.createLinearGradient(0,0,0,160);g.addColorStop(0,color+'30');g.addColorStop(1,'rgba(0,0,0,0)');
+  charts[id]=new Chart(ctx,{type:'line',data:{labels:pts.map(p=>fdate(p.ts)),datasets:[{data:vals,borderColor:color,backgroundColor:g,borderWidth:2,pointRadius:pts.length>25?0:3,pointHoverRadius:4,pointBackgroundColor:color,fill:true,tension:.35}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1b1e28',borderColor:'#2a3050',borderWidth:1,
-        titleColor:'#828ba8',bodyColor:color,bodyFont:{family:'Space Mono',size:11},callbacks:{label:c=>' '+labelFn(c.raw)}}},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1b1e28',borderColor:'#2a3050',borderWidth:1,titleColor:'#828ba8',bodyColor:color,bodyFont:{family:'Space Mono',size:11},callbacks:{label:c=>' '+labelFn(c.raw)}}},
       scales:{x:{ticks:{color:'#474f68',font:{size:9},maxTicksLimit:5,maxRotation:0},grid:{color:'rgba(255,255,255,.03)'}},
         y:{ticks:{color:'#474f68',font:{family:'Space Mono',size:9},callback:v=>fmt(v)},grid:{color:'rgba(255,255,255,.03)'},min:mn*.97,max:mx*1.03}}}});
   return true;
@@ -976,47 +1197,38 @@ function buildChart(id,pts,color,labelFn){
 function chartPanel(prefix,key,label,color,cid){
   const pts=hDataFor(prefix,key);
   if(pts.length<2) return `<div class="chart-panel"><div class="cht-ttl">${label}</div><div class="noht"><div class="ni">📈</div><p>${pts.length===0?'No history yet.':'Only 1 point so far.'}</p></div></div>`;
-  const vals=pts.map(p=>p.v), chg=vals[vals.length-1]-vals[0], pct=((chg/vals[0])*100).toFixed(1);
+  const vals=pts.map(p=>p.v),chg=vals[vals.length-1]-vals[0],pct=((chg/vals[0])*100).toFixed(1);
   return `<div class="chart-panel"><div class="cht-ttl">${label} <span>${pts.length} pts · ${chg>=0?'+':''}${pct}%</span></div><div class="chwrap"><canvas id="${cid}"></canvas></div></div>`;
 }
 
 function openModal(item){
-  const cd=item.configData, c=catCls(item.category), isPet=item.category==='Pet';
-  const url=isPet?petImg(cd.id,cd.pt):null, vl=vLabel(cd.pt,cd.sh);
-  const mc=marketCap(item);
+  const cd=item.configData,c=catCls(item.category),isPet=item.category==='Pet';
+  const url=isPet?petImg(cd.id,cd.pt):null,vl=vLabel(cd.pt,cd.sh),mc=marketCap(item);
   const mico=document.getElementById('mico');
   mico.className=`mico ${c}`;
   mico.innerHTML=isPet&&url?`<img class="pi" src="${url}">${vOverlay(cd.pt,cd.sh)}`:`<span class="pp">${cEmoji(item.category)}</span>${vOverlay(cd.pt,cd.sh)}`;
-  document.getElementById('mnam').textContent=cd.id+(vl?` (${vl})`:'');
+  document.getElementById('mnam').innerHTML=esc(cd.id)+(vl?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:'');
   document.getElementById('mbdgs').innerHTML=`<span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt,cd.sh,cd.tn)}`;
-
-  // Stats
+  const _petDesc = item.category==='Pet' ? (S.pets[cd.id]?.desc||'') : '';
+  const _descEl  = document.getElementById('mdesc');
+  _descEl.textContent  = _petDesc;
+  _descEl.style.display = _petDesc ? 'block' : 'none';
   document.getElementById('mstats').innerHTML=`
     <div class="mstat${item.rap==null?' no-data':''}"><div class="mstat-lbl">RAP</div><div class="mstat-val">${fmt(item.rap)}</div></div>
     <div class="mstat exists${item.exists==null?' no-data':''}"><div class="mstat-lbl">In Existence</div><div class="mstat-val">${fmt(item.exists)}</div></div>
     <div class="mstat mcap${mc==null?' no-data':''}"><div class="mstat-lbl">Market Cap</div><div class="mstat-val">${fmt(mc)}</div></div>`;
-
-  // % change row
   const changes=[
-    {label:'1h RAP',  p:pctChange(item,'r|',1)},
-    {label:'24h RAP', p:pctChange(item,'r|',24)},
-    {label:'7d RAP',  p:pctChange(item,'r|',168)},
-    {label:'1h Supply',  p:pctChange(item,'e|',1)},
-    {label:'24h Supply', p:pctChange(item,'e|',24)},
-    {label:'7d Supply',  p:pctChange(item,'e|',168)},
+    {label:'1h RAP',p:pctChange(item,'r|',1)},{label:'24h RAP',p:pctChange(item,'r|',24)},{label:'7d RAP',p:pctChange(item,'r|',168)},
+    {label:'1h Supply',p:pctChange(item,'e|',1)},{label:'24h Supply',p:pctChange(item,'e|',24)},{label:'7d Supply',p:pctChange(item,'e|',168)},
   ];
   document.getElementById('mchg-row').innerHTML=changes.map(({label,p})=>{
     const cls=p==null?'nil':p>0?'up':'dn';
     return `<div class="mchg"><div class="mchg-lbl">${label}</div><div class="mchg-val ${cls}">${p==null?'—':(p>=0?'+':'')+p.toFixed(2)+'%'}</div></div>`;
   }).join('');
-
   destroyCharts();
-  document.getElementById('mcharts').innerHTML=
-    chartPanel('r|',item.key,'RAP History','#f7b731','ch-rap')+
-    chartPanel('e|',item.key,'Supply History','#4ecdc4','ch-ex');
+  document.getElementById('mcharts').innerHTML=chartPanel('r|',item.key,'RAP History','#f7b731','ch-rap')+chartPanel('e|',item.key,'Supply History','#4ecdc4','ch-ex');
   buildChart('ch-rap',hDataFor('r|',item.key),'#f7b731',v=>fmt(v));
   buildChart('ch-ex', hDataFor('e|',item.key),'#4ecdc4',v=>fmt(v));
-
   document.getElementById('mbg').classList.remove('gone');
 }
 
@@ -1025,23 +1237,76 @@ document.getElementById('mclose').addEventListener('click',closeModal);
 document.getElementById('mbg').addEventListener('click',e=>{if(e.target.id==='mbg')closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
-/* ═══════════════════ PAGE NAV ════════════════════ */
+/* ══════════════════════════════════════════
+   PAGE NAV
+══════════════════════════════════════════ */
+let hatchPollTimer=null;
+
 document.querySelectorAll('.nav-tab').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
   document.getElementById('page-'+b.dataset.page).classList.add('on');
   if(b.dataset.page==='analytics') renderAnalytics();
+  if(b.dataset.page==='diamonds')  renderDiamonds();
+  if(b.dataset.page==='hatch'){
+    // Load server-side hatch history, then start refresh interval
+    loadHatchHistory().then(renderHatchFeed);
+    if(!hatchPollTimer) hatchPollTimer=setInterval(()=>loadHatchHistory().then(renderHatchFeed), HATCH_MS);
+  }
 }));
 
-/* ═══════════════════ MARKET EVENT WIRING ════════════════════ */
+/* ══════════════════════════════════════════
+   MARKET EVENT WIRING
+══════════════════════════════════════════ */
 let searchTimer;
 document.getElementById('si').addEventListener('input',e=>{ clearTimeout(searchTimer); searchTimer=setTimeout(()=>{S.q=e.target.value.trim();recompute();renderItems();},120); });
 document.getElementById('vtab').querySelectorAll('.tb').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('#vtab .tb').forEach(x=>x.classList.remove('on')); b.classList.add('on'); S.view=b.dataset.view; renderItems(); }));
 document.querySelectorAll('.sb').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('.sb').forEach(x=>x.classList.remove('on')); b.classList.add('on'); S.sort=b.dataset.sort; recompute(); renderItems(); }));
-document.querySelectorAll('.vb').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('.vb').forEach(x=>x.classList.remove('on')); b.classList.add('on'); S.variant=b.dataset.v; recompute(); renderItems(); }));
 
-/* ═══════════════════ INIT ════════════════════ */
+// Type variant buttons (mutually exclusive)
+document.querySelectorAll('[data-vtype]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-vtype]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); S.variantType=b.dataset.vtype; recompute(); renderItems();
+}));
+
+// Shiny filter buttons
+document.querySelectorAll('[data-shiny]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-shiny]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); S.shinyFilter=b.dataset.shiny; recompute(); renderItems();
+}));
+
+// Diamonds huge sort
+let hdSort = 'rap-desc';
+let hdPage = 1;
+const HD_PER_PAGE = 48;
+document.getElementById('hd-sort-btns').addEventListener('click', e => {
+  const b = e.target.closest('[data-hdsort]');
+  if (!b) return;
+  document.querySelectorAll('[data-hdsort]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  hdSort = b.dataset.hdsort;
+  hdPage = 1;
+  renderDiamondsHugeTable();
+});
+
+// Hatch window selector
+document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-w]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); H.windowSec=parseInt(b.dataset.w); renderHatchFeed();
+}));
+
+// Hatch type selector
+document.querySelectorAll('[data-htype]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('[data-htype]').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); H.htype=b.dataset.htype;
+  if(H.rateChart){H.rateChart.destroy();H.rateChart=null;}
+  renderHatchFeed();
+}));
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
 async function init(){
   prog(8,'Fetching live data…');
   const [latestRes,pr]=await Promise.all([
@@ -1052,7 +1317,7 @@ async function init(){
   S.items=mergeData(latestRes.rap||[],latestRes.exists||[]);
   for(const p of (pr.data||[])){
     const cd=p.configData;
-    S.pets[p.configName]={thumbId:aid(cd.thumbnail),goldenId:aid(cd.goldenThumbnail),isHuge:!!cd.huge};
+    S.pets[p.configName]={thumbId:aid(cd.thumbnail),goldenId:aid(cd.goldenThumbnail),desc:cd.indexDesc||''};
   }
   prog(75,'Loading price history…');
   await loadHistory();
@@ -1075,14 +1340,290 @@ async function refresh(){
   try{
     const latestRes=await fetch(WORKER_URL+'/latest').then(r=>r.json());
     S.items=mergeData(latestRes.rap||[],latestRes.exists||[]);
-    await loadHistory();
+    await loadHistory(); // refreshes both S.hist and S.hist7d
     document.getElementById('hts').textContent='Updated '+new Date().toLocaleTimeString();
     document.getElementById('h-total').textContent=S.items.length.toLocaleString()+' items';
     recompute(); renderItems();
     if(document.getElementById('page-analytics').classList.contains('on')) renderAnalytics();
+    if(document.getElementById('page-diamonds').classList.contains('on'))  renderDiamonds();
   }catch(_){}
 }
 setInterval(refresh,REFRESH_MS);
+
+/* ══════════════════════════════════════════════════════
+   DIAMONDS PAGE
+   RAP values are already in diamonds — no conversion needed.
+   "Diamond items" = anything with "diamond" in name in exists/rap data.
+   "Diamond supply" = sum of all such exists values over time.
+══════════════════════════════════════════════════════ */
+
+// Returns true if an item is a "diamond" item
+function isDiamondItem(item) {
+  // Only the raw Diamonds currency items (id === 'Diamonds'), not flags/potions/enchants
+  return item.configData.id === 'Diamonds';
+}
+
+// Get all diamond items from merged S.items
+function getDiamondItems() {
+  return S.items.filter(isDiamondItem);
+}
+
+// Total diamond supply = sum of exists of all diamond items at a snapshot
+function totalDiamondSupplyAt(snap) {
+  let total = 0;
+  for (const item of getDiamondItems()) {
+    const v = snap.d['e|' + item.key];
+    if (v != null) total += v;
+  }
+  return total;
+}
+
+// Average Huge (normal, no variant) RAP at a snapshot
+function avgHugeRapAt(snap) {
+  const huges = S.items.filter(x =>
+    x.category === 'Pet' &&
+    x.configData.id.toLowerCase().includes('huge') &&
+    !x.configData.pt && !x.configData.sh
+  );
+  let sum = 0, count = 0;
+  for (const h of huges) {
+    const v = snap.d['r|' + h.key];
+    if (v != null) { sum += v; count++; }
+  }
+  return count > 0 ? sum / count : null;
+}
+
+let diamSupplyChart = null;
+let diamHugeChartInst = null;
+
+function renderDiamonds() {
+  renderDiamondStats();
+  renderDiamondCharts();
+  renderDiamondsHugeTable();
+}
+
+// ── Stat cards ──────────────────────────────────────────────────────────────
+function renderDiamondStats() {
+  const diamItems = getDiamondItems();
+  const totalSupply = diamItems.reduce((s, x) => s + (x.exists || 0), 0);
+
+  const huges = S.items.filter(x =>
+    x.category === 'Pet' &&
+    x.configData.id.toLowerCase().includes('huge') &&
+    !x.configData.pt && !x.configData.sh && x.rap != null
+  );
+  const avgRap = huges.length
+    ? huges.reduce((s, x) => s + x.rap, 0) / huges.length
+    : null;
+  const cheapestHuge = huges.length
+    ? huges.reduce((a, b) => a.rap < b.rap ? a : b)
+    : null;
+  const mostExpensive = huges.length
+    ? huges.reduce((a, b) => a.rap > b.rap ? a : b)
+    : null;
+  const titanics = S.items.filter(x =>
+    x.category === 'Pet' &&
+    x.configData.id.toLowerCase().includes('titanic') &&
+    !x.configData.pt && !x.configData.sh && x.rap != null
+  );
+  const cheapestTitanic  = titanics.length ? titanics.reduce((a,b) => a.rap < b.rap ? a : b) : null;
+  const expensiveTitanic = titanics.length ? titanics.reduce((a,b) => a.rap > b.rap ? a : b) : null;
+
+  // 24h supply change
+  const snap24 = closestSnap(24);
+  let supplyChg = null;
+  if (snap24) {
+    let oldTotal = 0;
+    for (const item of diamItems) {
+      const v = snap24.d['e|' + item.key];
+      if (v != null) oldTotal += v;
+    }
+    if (oldTotal > 0) supplyChg = ((totalSupply - oldTotal) / oldTotal) * 100;
+  }
+
+  document.getElementById('diam-stat-row').innerHTML = `
+    <div class="diam-hero-card supply">
+      <div class="dhc-lbl">Total Diamond Supply</div>
+      <div class="dhc-val">${fmt(totalSupply)}</div>
+      <div class="dhc-sub">${supplyChg != null
+        ? (supplyChg >= 0 ? '+' : '') + supplyChg.toFixed(3) + '% in 24h'
+        : 'Accumulating history…'}</div>
+    </div>
+    <div class="diam-hero-card rate">
+      <div class="dhc-lbl">Avg Huge Price</div>
+      <div class="dhc-val">${fmt(avgRap)}</div>
+      <div class="dhc-sub">diamonds · ${huges.length} huges tracked</div>
+    </div>
+    <div class="diam-hero-card power">
+      <div class="dhc-lbl">Cheapest Huge</div>
+      <div class="dhc-val">${cheapestHuge ? fmt(cheapestHuge.rap) : '—'}</div>
+      <div class="dhc-sub">${cheapestHuge ? cheapestHuge.configData.id : ''}</div>
+    </div>
+    <div class="diam-hero-card huges">
+      <div class="dhc-lbl">Most Expensive Huge</div>
+      <div class="dhc-val">${mostExpensive ? fmt(mostExpensive.rap) : '—'}</div>
+      <div class="dhc-sub">${mostExpensive ? mostExpensive.configData.id : ''}</div>
+    </div>
+    <div class="diam-hero-card">
+      <div class="dhc-lbl">Cheapest Titanic</div>
+      <div class="dhc-val" style="color:#4ecdc4">${cheapestTitanic ? fmt(cheapestTitanic.rap) : '—'}</div>
+      <div class="dhc-sub">${cheapestTitanic ? cheapestTitanic.configData.id : 'None tracked'}</div>
+    </div>
+    <div class="diam-hero-card">
+      <div class="dhc-lbl">Most Expensive Titanic</div>
+      <div class="dhc-val" style="color:#4ecdc4">${expensiveTitanic ? fmt(expensiveTitanic.rap) : '—'}</div>
+      <div class="dhc-sub">${expensiveTitanic ? expensiveTitanic.configData.id : ''}</div>
+    </div>\`;
+}
+
+// ── Charts ──────────────────────────────────────────────────────────────────
+function renderDiamondCharts() {
+  if (diamSupplyChart)    { diamSupplyChart.destroy();    diamSupplyChart = null; }
+  if (diamHugeChartInst)  { diamHugeChartInst.destroy();  diamHugeChartInst = null; }
+
+  if (S.hist.length < 2) return;
+
+  // Supply chart
+  const supplyPts = S.hist.map(s => ({ ts: s.ts, v: totalDiamondSupplyAt(s) })).filter(p => p.v > 0);
+  if (supplyPts.length >= 2) {
+    const ctx = document.getElementById('diam-supply-chart').getContext('2d');
+    const vals = supplyPts.map(p => p.v);
+    const mn = Math.min(...vals), mx = Math.max(...vals);
+    const g = ctx.createLinearGradient(0, 0, 0, 180);
+    g.addColorStop(0, 'rgba(110,231,247,.2)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    diamSupplyChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: supplyPts.map(p => fdate(p.ts)), datasets: [{
+        data: vals, borderColor: '#6ee7f7', backgroundColor: g,
+        borderWidth: 2, pointRadius: supplyPts.length > 40 ? 0 : 3,
+        pointHoverRadius: 5, pointBackgroundColor: '#6ee7f7',
+        fill: true, tension: .35,
+      }]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#1b1e28', borderColor: '#2a3050', borderWidth: 1,
+            titleColor: '#828ba8', bodyColor: '#6ee7f7',
+            bodyFont: { family: 'Space Mono', size: 11 },
+            callbacks: { label: c => ' ' + fmt(c.raw) + ' diamonds' } },
+        },
+        scales: {
+          x: { ticks: { color:'#474f68', font:{size:9}, maxTicksLimit:7, maxRotation:0 }, grid: { color:'rgba(255,255,255,.03)' } },
+          y: { ticks: { color:'#474f68', font:{family:'Space Mono',size:9}, callback: v => fmt(v) }, grid: { color:'rgba(255,255,255,.03)' }, min: mn * .997, max: mx * 1.003 },
+        },
+      },
+    });
+  }
+
+  // Avg huge price chart
+  const hugePts = S.hist.map(s => ({ ts: s.ts, v: avgHugeRapAt(s) })).filter(p => p.v != null);
+  if (hugePts.length >= 2) {
+    const ctx2 = document.getElementById('diam-huge-chart').getContext('2d');
+    const vals2 = hugePts.map(p => p.v);
+    const mn2 = Math.min(...vals2), mx2 = Math.max(...vals2);
+    const g2 = ctx2.createLinearGradient(0, 0, 0, 180);
+    g2.addColorStop(0, 'rgba(247,183,49,.2)'); g2.addColorStop(1, 'rgba(0,0,0,0)');
+    diamHugeChartInst = new Chart(ctx2, {
+      type: 'line',
+      data: { labels: hugePts.map(p => fdate(p.ts)), datasets: [{
+        data: vals2, borderColor: '#f7b731', backgroundColor: g2,
+        borderWidth: 2, pointRadius: hugePts.length > 40 ? 0 : 3,
+        pointHoverRadius: 5, pointBackgroundColor: '#f7b731',
+        fill: true, tension: .35,
+      }]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#1b1e28', borderColor: '#2a3050', borderWidth: 1,
+            titleColor: '#828ba8', bodyColor: '#f7b731',
+            bodyFont: { family: 'Space Mono', size: 11 },
+            callbacks: { label: c => ' avg ' + fmt(c.raw) + ' 💎' } },
+        },
+        scales: {
+          x: { ticks: { color:'#474f68', font:{size:9}, maxTicksLimit:7, maxRotation:0 }, grid: { color:'rgba(255,255,255,.03)' } },
+          y: { ticks: { color:'#474f68', font:{family:'Space Mono',size:9}, callback: v => fmt(v) }, grid: { color:'rgba(255,255,255,.03)' }, min: mn2 * .97, max: mx2 * 1.03 },
+        },
+      },
+    });
+  }
+}
+
+
+
+// ── Huge Denominator Table ───────────────────────────────────────────────────
+function renderDiamondsHugeTable() {
+  let huges = S.items.filter(x =>
+    x.category === 'Pet' &&
+    (x.configData.id.toLowerCase().includes('huge') || x.configData.id.toLowerCase().includes('titanic')) &&
+    x.rap != null
+  );
+
+  const CHG24 = x => { const p = pctChange(x, 'r|', 24); return p != null ? p : -Infinity; };
+  if      (hdSort === 'rap-desc')    huges = huges.sort((a,b) => b.rap - a.rap);
+  else if (hdSort === 'rap-asc')     huges = huges.sort((a,b) => a.rap - b.rap);
+  else if (hdSort === 'supply-desc') huges = huges.sort((a,b) => (b.exists||0) - (a.exists||0));
+  else if (hdSort === 'chg24-desc')  huges = huges.sort((a,b) => CHG24(b) - CHG24(a));
+  else                               huges = huges.sort((a,b) => a.configData.id.localeCompare(b.configData.id));
+
+  const hdTotal = huges.length;
+  const hdPages = Math.ceil(hdTotal / HD_PER_PAGE);
+  if (hdPage > hdPages) hdPage = Math.max(1, hdPages);
+  const hdStart = (hdPage - 1) * HD_PER_PAGE;
+  const hdSlice = huges.slice(hdStart, hdStart + HD_PER_PAGE);
+
+  const bar = document.getElementById('hd-pgbar');
+  if (hdPages <= 1) {
+    bar.innerHTML = '';
+  } else {
+    const cur = hdPage, btns = [];
+    btns.push(`<button class="pgbtn" data-hdp="${cur-1}" ${cur===1?'disabled':''}>&#8249;</button>`);
+    const show = new Set([1,hdPages,cur,cur-1,cur+1,cur-2,cur+2].filter(p=>p>=1&&p<=hdPages));
+    let prev=0;
+    for (const p of [...show].sort((a,b)=>a-b)) {
+      if (prev && p-prev>1) btns.push('<button class="pgbtn ell">…</button>');
+      btns.push(`<button class="pgbtn${p===cur?' cur':''}" data-hdp="${p}">${p}</button>`);
+      prev=p;
+    }
+    btns.push(`<button class="pgbtn" data-hdp="${cur+1}" ${cur===hdPages?'disabled':''}>&#8250;</button>`);
+    btns.push(`<span class="pg-info">Page ${cur} of ${hdPages} · ${hdTotal} items</span>`);
+    bar.innerHTML = btns.join('');
+    bar.querySelectorAll('[data-hdp]').forEach(b => b.addEventListener('click', () => {
+      hdPage = parseInt(b.dataset.hdp);
+      renderDiamondsHugeTable();
+      document.getElementById('page-diamonds').scrollIntoView({behavior:'smooth'});
+    }));
+  }
+
+  document.getElementById('diam-huge-body').innerHTML = hdSlice.map(item => {
+    const cd  = item.configData;
+    const url = petImg(cd.id, cd.pt);
+    const vl  = vLabel(cd.pt, cd.sh);
+    const p24 = pctChange(item, 'r|', 24);
+    const pCls = p24 == null ? 'nil' : p24 > 0 ? 'up' : 'dn';
+    const icoHtml = url
+      ? `<img class="pi" src="${url}" loading="lazy">${vOverlay(cd.pt, cd.sh)}`
+      : `<span class="pp" style="font-size:17px">🐾</span>${vOverlay(cd.pt, cd.sh)}`;
+
+    return `<div class="hd-row" data-key="${esc(item.key)}">
+      <div class="hdr-ico">${icoHtml}</div>
+      <div class="hdr-name">${esc(cd.id)}${(cd.pt||cd.sh) ? ` <small>${vLabelHtml(cd.pt, cd.sh)}</small>` : ''}</div>
+      <div class="hdr-diam">💎 ${fmt(item.rap)}</div>
+      <div class="hdr-pct pct ${pCls}">${p24 == null ? '—' : (p24 >= 0 ? '+' : '') + p24.toFixed(2) + '%'}</div>
+      <div class="hdr-supply">${fmt(item.exists)}</div>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.hd-row[data-key]').forEach(el =>
+    el.addEventListener('click', () => {
+      const item = S.items.find(x => x.key === el.dataset.key);
+      if (item) openModal(item);
+    }));
+}
+
 </script>
 </body>
 </html>
