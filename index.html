@@ -359,6 +359,55 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
   .hatch-table-hdr,.hatch-trow{grid-template-columns:1fr 70px 70px}
 }
 @media(max-width:400px){.grid{grid-template-columns:1fr}}
+
+/* DIAMONDS PAGE */
+.diam-hero-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:22px}
+.diam-hero-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.diam-hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#6ee7f7,#a78bfa,#f9a8d4)}
+.diam-hero-card .dhc-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:4px}
+.diam-hero-card .dhc-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;line-height:1;margin-bottom:4px}
+.diam-hero-card .dhc-sub{font-size:10.5px;color:var(--t2)}
+.diam-hero-card.supply .dhc-val{color:#6ee7f7}
+.diam-hero-card.rate   .dhc-val{color:#a78bfa}
+.diam-hero-card.power  .dhc-val{color:#f9a8d4}
+.diam-hero-card.huges  .dhc-val{color:var(--acc)}
+.diam-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.diam-chart-panel{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px}
+.diam-chart-panel .dcp-title{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px}
+.diam-chart-panel .dcp-sub{font-size:11px;color:var(--t2);margin-bottom:12px}
+.diam-chart-panel .dcp-canvas{height:200px}
+.diam-table{background:var(--s1);border:1px solid var(--b1);border-radius:11px;overflow:hidden;margin-bottom:6px}
+.diam-table-hdr{display:grid;grid-template-columns:1fr 110px 120px 85px 80px;padding:8px 14px;border-bottom:1px solid var(--b1);font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.diam-row{display:grid;grid-template-columns:1fr 110px 120px 85px 80px;padding:9px 14px;border-bottom:1px solid var(--b1);align-items:center;transition:background .12s;cursor:pointer}
+.diam-row:last-child{border-bottom:none}.diam-row:hover{background:var(--s2)}
+.diam-row .dr-name{font-family:'Rajdhani',sans-serif;font-size:13.5px;font-weight:600}
+.diam-row .dr-supply{font-family:'Space Mono',monospace;font-size:11px;color:#6ee7f7;text-align:right}
+.diam-row .dr-rap{font-family:'Space Mono',monospace;font-size:11px;color:var(--acc);text-align:right}
+.diam-row .dr-pct{font-family:'Space Mono',monospace;font-size:11px;text-align:right}
+.diam-row .dr-spark{display:flex;justify-content:flex-end}
+.hd-table{background:var(--s1);border:1px solid var(--b1);border-radius:11px;overflow:hidden}
+.hd-table-hdr{display:grid;grid-template-columns:44px 1fr 140px 100px 110px;padding:8px 14px;border-bottom:1px solid var(--b1);font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.hd-row{display:grid;grid-template-columns:44px 1fr 140px 100px 110px;padding:8px 14px;border-bottom:1px solid var(--b1);align-items:center;cursor:pointer;transition:background .12s}
+.hd-row:last-child{border-bottom:none}.hd-row:hover{background:var(--s2)}
+.hd-row .hdr-ico{width:34px;height:34px;border-radius:6px;overflow:hidden;background:var(--s3);display:flex;align-items:center;justify-content:center;position:relative}
+.hd-row .hdr-ico .pi{width:86%;height:86%}
+.hd-row .hdr-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hd-row .hdr-diam{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#6ee7f7;text-align:right}
+.hd-row .hdr-pct{font-family:'Space Mono',monospace;font-size:11px;text-align:right}
+.hd-row .hdr-supply{font-family:'Space Mono',monospace;font-size:11px;color:var(--teal);text-align:right}
+@media(max-width:900px){
+  .diam-charts{grid-template-columns:1fr}
+  .diam-table-hdr,.diam-row{grid-template-columns:1fr 100px 110px 80px}
+  .diam-table-hdr .dth-spark,.diam-row .dr-spark{display:none}
+  .hd-table-hdr,.hd-row{grid-template-columns:44px 1fr 120px 90px}
+  .hd-table-hdr .hdth-supply,.hd-row .hdr-supply{display:none}
+}
+@media(max-width:600px){
+  .diam-table-hdr,.diam-row{grid-template-columns:1fr 90px 100px}
+  .diam-table-hdr .dth-pct,.diam-row .dr-pct{display:none}
+  .hd-table-hdr,.hd-row{grid-template-columns:44px 1fr 110px}
+  .hd-table-hdr .hdth-pct,.hd-row .hdr-pct{display:none}
+}
 </style>
 </head>
 <body>
@@ -381,6 +430,9 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
       </button>
       <button class="nav-tab" data-page="analytics">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Analytics
+      </button>
+      <button class="nav-tab" data-page="diamonds">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="8.5" x2="22" y2="8.5"/></svg>Diamonds
       </button>
     </nav>
     <div class="hpills">
@@ -494,6 +546,47 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px}
   </div>
   <div class="sec-hdr">Scarcity Index <span>Pets — highest RAP relative to supply</span></div>
   <div class="scarcity-grid" id="scarcity-grid"></div>
+</div>
+
+
+<!-- DIAMONDS PAGE -->
+<div class="page" id="page-diamonds">
+  <div class="hero">
+    <h1>💎 <em>Diamond Economy</em></h1>
+    <p>Diamonds are the native PS99 currency. RAP values <em>are</em> diamond prices. Track the total diamond supply, inflation rate, and exact diamond cost of every Huge and Titanic pet.</p>
+  </div>
+  <div class="diam-hero-grid" id="diam-stat-row"></div>
+  <div class="diam-charts">
+    <div class="diam-chart-panel">
+      <div class="dcp-title">Total Diamond Circulation</div>
+      <div class="dcp-sub">Total supply of the Diamonds currency item across all tiers</div>
+      <div class="dcp-canvas"><canvas id="diam-supply-chart"></canvas></div>
+    </div>
+    <div class="diam-chart-panel">
+      <div class="dcp-title">Average Huge RAP</div>
+      <div class="dcp-sub">Mean diamond price of all normal Huge pets over time</div>
+      <div class="dcp-canvas"><canvas id="diam-huge-chart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec-hdr">Huge Prices in 💎 <span>RAP = diamonds · sorted by price</span></div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="hd-sort-btns">
+    <button class="sb on" data-hdsort="rap-desc">Price ↓</button>
+    <button class="sb"    data-hdsort="rap-asc">Price ↑</button>
+    <button class="sb"    data-hdsort="supply-desc">Supply ↓</button>
+    <button class="sb"    data-hdsort="chg24-desc">24h % ↓</button>
+    <button class="sb"    data-hdsort="name-asc">A – Z</button>
+  </div>
+  <div class="hd-table">
+    <div class="hd-table-hdr">
+      <div></div>
+      <div>Pet</div>
+      <div style="text-align:right">💎 Price</div>
+      <div class="hdth-pct" style="text-align:right">24h %</div>
+      <div class="hdth-supply" style="text-align:right">Supply</div>
+    </div>
+    <div id="diam-huge-body"></div>
+  </div>
 </div>
 
 </main>
@@ -885,7 +978,8 @@ function renderHatchFeed() {
     </div>`;
   }).join('');
 
-  const tableHtml = withDelta.map(({key,meta,delta,curExists}) => {
+  const activeOnly = withDelta.filter(x => x.delta > 0);
+  const tableHtml = activeOnly.map(({key,meta,delta,curExists}) => {
     const url = petImg(meta.id, meta.pt);
     const sp  = spark(hatchDataForKey(key), 70, 18);
     const ratePerMin = H.windowSec>0 ? (delta/(H.windowSec/60)).toFixed(1) : 0;
@@ -904,7 +998,7 @@ function renderHatchFeed() {
 
   document.getElementById('hatch-feed-body').innerHTML = `
     <div class="feed-grid">${gridHtml}</div>
-    <div class="sec-hdr" style="margin-top:8px">Full Table <span>all tracked pets · sorted by activity</span></div>
+    <div class="sec-hdr" style="margin-top:8px">Active Pets <span>hatched at least 1 in selected window</span></div>
     <div class="hatch-table">
       <div class="hatch-table-hdr">
         <div>Pet</div><div style="text-align:right">Hatched (${wLabel})</div>
@@ -1114,6 +1208,7 @@ document.querySelectorAll('.nav-tab').forEach(b=>b.addEventListener('click',()=>
   b.classList.add('on');
   document.getElementById('page-'+b.dataset.page).classList.add('on');
   if(b.dataset.page==='analytics') renderAnalytics();
+  if(b.dataset.page==='diamonds')  renderDiamonds();
   if(b.dataset.page==='hatch'){
     // Load server-side hatch history, then start refresh interval
     loadHatchHistory().then(renderHatchFeed);
@@ -1140,6 +1235,17 @@ document.querySelectorAll('[data-shiny]').forEach(b=>b.addEventListener('click',
   document.querySelectorAll('[data-shiny]').forEach(x=>x.classList.remove('on'));
   b.classList.add('on'); S.shinyFilter=b.dataset.shiny; recompute(); renderItems();
 }));
+
+// Diamonds huge sort
+let hdSort = 'rap-desc';
+document.getElementById('hd-sort-btns').addEventListener('click', e => {
+  const b = e.target.closest('[data-hdsort]');
+  if (!b) return;
+  document.querySelectorAll('[data-hdsort]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  hdSort = b.dataset.hdsort;
+  renderDiamondsHugeTable();
+});
 
 // Hatch window selector
 document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('click',()=>{
@@ -1196,9 +1302,239 @@ async function refresh(){
     document.getElementById('h-total').textContent=S.items.length.toLocaleString()+' items';
     recompute(); renderItems();
     if(document.getElementById('page-analytics').classList.contains('on')) renderAnalytics();
+    if(document.getElementById('page-diamonds').classList.contains('on'))  renderDiamonds();
   }catch(_){}
 }
 setInterval(refresh,REFRESH_MS);
+
+/* ══════════════════════════════════════════════════════
+   DIAMONDS PAGE
+   RAP values are already in diamonds — no conversion needed.
+   "Diamond items" = anything with "diamond" in name in exists/rap data.
+   "Diamond supply" = sum of all such exists values over time.
+══════════════════════════════════════════════════════ */
+
+// Returns true if an item is a "diamond" item
+function isDiamondItem(item) {
+  // Only the raw Diamonds currency items (id === 'Diamonds'), not flags/potions/enchants
+  return item.configData.id === 'Diamonds';
+}
+
+// Get all diamond items from merged S.items
+function getDiamondItems() {
+  return S.items.filter(isDiamondItem);
+}
+
+// Total diamond supply = sum of exists of all diamond items at a snapshot
+function totalDiamondSupplyAt(snap) {
+  let total = 0;
+  for (const item of getDiamondItems()) {
+    const v = snap.d['e|' + item.key];
+    if (v != null) total += v;
+  }
+  return total;
+}
+
+// Average Huge (normal, no variant) RAP at a snapshot
+function avgHugeRapAt(snap) {
+  const huges = S.items.filter(x =>
+    x.category === 'Pet' &&
+    x.configData.id.toLowerCase().includes('huge') &&
+    !x.configData.pt && !x.configData.sh
+  );
+  let sum = 0, count = 0;
+  for (const h of huges) {
+    const v = snap.d['r|' + h.key];
+    if (v != null) { sum += v; count++; }
+  }
+  return count > 0 ? sum / count : null;
+}
+
+let diamSupplyChart = null;
+let diamHugeChartInst = null;
+
+function renderDiamonds() {
+  renderDiamondStats();
+  renderDiamondCharts();
+  renderDiamondsHugeTable();
+}
+
+// ── Stat cards ──────────────────────────────────────────────────────────────
+function renderDiamondStats() {
+  const diamItems = getDiamondItems();
+  const totalSupply = diamItems.reduce((s, x) => s + (x.exists || 0), 0);
+
+  const huges = S.items.filter(x =>
+    x.category === 'Pet' &&
+    x.configData.id.toLowerCase().includes('huge') &&
+    !x.configData.pt && !x.configData.sh && x.rap != null
+  );
+  const avgRap = huges.length
+    ? huges.reduce((s, x) => s + x.rap, 0) / huges.length
+    : null;
+  const cheapestHuge = huges.length
+    ? huges.reduce((a, b) => a.rap < b.rap ? a : b)
+    : null;
+  const mostExpensive = huges.length
+    ? huges.reduce((a, b) => a.rap > b.rap ? a : b)
+    : null;
+
+  // 24h supply change
+  const snap24 = closestSnap(24);
+  let supplyChg = null;
+  if (snap24) {
+    let oldTotal = 0;
+    for (const item of diamItems) {
+      const v = snap24.d['e|' + item.key];
+      if (v != null) oldTotal += v;
+    }
+    if (oldTotal > 0) supplyChg = ((totalSupply - oldTotal) / oldTotal) * 100;
+  }
+
+  document.getElementById('diam-stat-row').innerHTML = `
+    <div class="diam-hero-card supply">
+      <div class="dhc-lbl">Total Diamond Supply</div>
+      <div class="dhc-val">${fmt(totalSupply)}</div>
+      <div class="dhc-sub">${supplyChg != null
+        ? (supplyChg >= 0 ? '+' : '') + supplyChg.toFixed(3) + '% in 24h'
+        : 'Accumulating history…'}</div>
+    </div>
+    <div class="diam-hero-card rate">
+      <div class="dhc-lbl">Avg Huge Price</div>
+      <div class="dhc-val">${fmt(avgRap)}</div>
+      <div class="dhc-sub">diamonds · ${huges.length} huges tracked</div>
+    </div>
+    <div class="diam-hero-card power">
+      <div class="dhc-lbl">Cheapest Huge</div>
+      <div class="dhc-val">${cheapestHuge ? fmt(cheapestHuge.rap) : '—'}</div>
+      <div class="dhc-sub">${cheapestHuge ? cheapestHuge.configData.id : ''}</div>
+    </div>
+    <div class="diam-hero-card huges">
+      <div class="dhc-lbl">Most Expensive Huge</div>
+      <div class="dhc-val">${mostExpensive ? fmt(mostExpensive.rap) : '—'}</div>
+      <div class="dhc-sub">${mostExpensive ? mostExpensive.configData.id : ''}</div>
+    </div>`;
+}
+
+// ── Charts ──────────────────────────────────────────────────────────────────
+function renderDiamondCharts() {
+  if (diamSupplyChart)    { diamSupplyChart.destroy();    diamSupplyChart = null; }
+  if (diamHugeChartInst)  { diamHugeChartInst.destroy();  diamHugeChartInst = null; }
+
+  if (S.hist.length < 2) return;
+
+  // Supply chart
+  const supplyPts = S.hist.map(s => ({ ts: s.ts, v: totalDiamondSupplyAt(s) })).filter(p => p.v > 0);
+  if (supplyPts.length >= 2) {
+    const ctx = document.getElementById('diam-supply-chart').getContext('2d');
+    const vals = supplyPts.map(p => p.v);
+    const mn = Math.min(...vals), mx = Math.max(...vals);
+    const g = ctx.createLinearGradient(0, 0, 0, 180);
+    g.addColorStop(0, 'rgba(110,231,247,.2)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    diamSupplyChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: supplyPts.map(p => fdate(p.ts)), datasets: [{
+        data: vals, borderColor: '#6ee7f7', backgroundColor: g,
+        borderWidth: 2, pointRadius: supplyPts.length > 40 ? 0 : 3,
+        pointHoverRadius: 5, pointBackgroundColor: '#6ee7f7',
+        fill: true, tension: .35,
+      }]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#1b1e28', borderColor: '#2a3050', borderWidth: 1,
+            titleColor: '#828ba8', bodyColor: '#6ee7f7',
+            bodyFont: { family: 'Space Mono', size: 11 },
+            callbacks: { label: c => ' ' + fmt(c.raw) + ' diamonds' } },
+        },
+        scales: {
+          x: { ticks: { color:'#474f68', font:{size:9}, maxTicksLimit:7, maxRotation:0 }, grid: { color:'rgba(255,255,255,.03)' } },
+          y: { ticks: { color:'#474f68', font:{family:'Space Mono',size:9}, callback: v => fmt(v) }, grid: { color:'rgba(255,255,255,.03)' }, min: mn * .997, max: mx * 1.003 },
+        },
+      },
+    });
+  }
+
+  // Avg huge price chart
+  const hugePts = S.hist.map(s => ({ ts: s.ts, v: avgHugeRapAt(s) })).filter(p => p.v != null);
+  if (hugePts.length >= 2) {
+    const ctx2 = document.getElementById('diam-huge-chart').getContext('2d');
+    const vals2 = hugePts.map(p => p.v);
+    const mn2 = Math.min(...vals2), mx2 = Math.max(...vals2);
+    const g2 = ctx2.createLinearGradient(0, 0, 0, 180);
+    g2.addColorStop(0, 'rgba(247,183,49,.2)'); g2.addColorStop(1, 'rgba(0,0,0,0)');
+    diamHugeChartInst = new Chart(ctx2, {
+      type: 'line',
+      data: { labels: hugePts.map(p => fdate(p.ts)), datasets: [{
+        data: vals2, borderColor: '#f7b731', backgroundColor: g2,
+        borderWidth: 2, pointRadius: hugePts.length > 40 ? 0 : 3,
+        pointHoverRadius: 5, pointBackgroundColor: '#f7b731',
+        fill: true, tension: .35,
+      }]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#1b1e28', borderColor: '#2a3050', borderWidth: 1,
+            titleColor: '#828ba8', bodyColor: '#f7b731',
+            bodyFont: { family: 'Space Mono', size: 11 },
+            callbacks: { label: c => ' avg ' + fmt(c.raw) + ' 💎' } },
+        },
+        scales: {
+          x: { ticks: { color:'#474f68', font:{size:9}, maxTicksLimit:7, maxRotation:0 }, grid: { color:'rgba(255,255,255,.03)' } },
+          y: { ticks: { color:'#474f68', font:{family:'Space Mono',size:9}, callback: v => fmt(v) }, grid: { color:'rgba(255,255,255,.03)' }, min: mn2 * .97, max: mx2 * 1.03 },
+        },
+      },
+    });
+  }
+}
+
+
+
+// ── Huge Denominator Table ───────────────────────────────────────────────────
+function renderDiamondsHugeTable() {
+  let huges = S.items.filter(x =>
+    x.category === 'Pet' &&
+    x.configData.id.toLowerCase().includes('huge') &&
+    x.rap != null
+  );
+
+  const CHG24 = x => { const p = pctChange(x, 'r|', 24); return p != null ? p : -Infinity; };
+  if      (hdSort === 'rap-desc')    huges = huges.sort((a,b) => b.rap - a.rap);
+  else if (hdSort === 'rap-asc')     huges = huges.sort((a,b) => a.rap - b.rap);
+  else if (hdSort === 'supply-desc') huges = huges.sort((a,b) => (b.exists||0) - (a.exists||0));
+  else if (hdSort === 'chg24-desc')  huges = huges.sort((a,b) => CHG24(b) - CHG24(a));
+  else                               huges = huges.sort((a,b) => a.configData.id.localeCompare(b.configData.id));
+
+  document.getElementById('diam-huge-body').innerHTML = huges.map(item => {
+    const cd  = item.configData;
+    const url = petImg(cd.id, cd.pt);
+    const vl  = vLabel(cd.pt, cd.sh);
+    const p24 = pctChange(item, 'r|', 24);
+    const pCls = p24 == null ? 'nil' : p24 > 0 ? 'up' : 'dn';
+    const icoHtml = url
+      ? `<img class="pi" src="${url}" loading="lazy">${vOverlay(cd.pt, cd.sh)}`
+      : `<span class="pp" style="font-size:17px">🐾</span>${vOverlay(cd.pt, cd.sh)}`;
+
+    return `<div class="hd-row" data-key="${esc(item.key)}">
+      <div class="hdr-ico">${icoHtml}</div>
+      <div class="hdr-name">${esc(cd.id)}${(cd.pt||cd.sh) ? ` <small>${vLabelHtml(cd.pt, cd.sh)}</small>` : ''}</div>
+      <div class="hdr-diam">💎 ${fmt(item.rap)}</div>
+      <div class="hdr-pct pct ${pCls}">${p24 == null ? '—' : (p24 >= 0 ? '+' : '') + p24.toFixed(2) + '%'}</div>
+      <div class="hdr-supply">${fmt(item.exists)}</div>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.hd-row[data-key]').forEach(el =>
+    el.addEventListener('click', () => {
+      const item = S.items.find(x => x.key === el.dataset.key);
+      if (item) openModal(item);
+    }));
+}
+
 </script>
 </body>
 </html>
