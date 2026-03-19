@@ -814,10 +814,7 @@ function renderCats(){
   const counts={};
   S.items.forEach(d=>counts[d.category]=(counts[d.category]||0)+1);
   const list=['All',...Object.keys(counts).sort((a,b)=>counts[b]-counts[a])];
-  document.getElementById('cats').innerHTML=list.map(c=>`
-    <button class="cb${c===S.cat?' on':''}" data-cat="${esc(c)}">
-      ${esc(c)}${c!=='All'?`<span class="cn">${counts[c]}</span>`:''}
-    </button>`).join('');
+  document.getElementById('cats').innerHTML=list.map(c=>('<button class="cb'+(c===S.cat?' on':'')+'" data-cat="'+esc(c)+'">'+esc(c)+(c!=='All'?'<span class="cn">'+counts[c]+'</span>':'')+'</button>')).join('');
   document.getElementById('cats').querySelectorAll('.cb').forEach(b=>
     b.addEventListener('click',()=>{ S.cat=b.dataset.cat; recompute(); renderCats(); renderItems(); }));
 }
@@ -828,7 +825,7 @@ function renderCats(){
 function iconHtml(item,cls){
   const cd=item.configData,isPet=item.category==='Pet';
   const url=isPet?petImg(cd.id,cd.pt):null;
-  if(isPet&&url) return `<img class="${cls}" src="${url}" loading="lazy">${vOverlay(cd.pt,cd.sh)}`;
+  if(isPet&&url) return '<img class="'+cls+'" src="'+url+'" loading="lazy">'+vOverlay(cd.pt,cd.sh);
   return `<span class="pp">${cEmoji(item.category)}</span>${vOverlay(cd.pt,cd.sh)}`;
 }
 
@@ -902,12 +899,16 @@ function renderPagination(){
   const total=S.filtered.length,pages=Math.ceil(total/PER_PAGE),bar=document.getElementById('pgbar');
   if(pages<=1){bar.innerHTML='';return;}
   const cur=S.page,btns=[];
-  btns.push(`<button class="pgbtn" data-p="${cur-1}" ${cur===1?'disabled':''}>‹</button>`);
+  btns.push('<button class="pgbtn" data-p="'+(cur-1)+'" '+(cur===1?'disabled':'')+'>&#8249;</button>');
   const show=new Set([1,pages,cur,cur-1,cur+1,cur-2,cur+2].filter(p=>p>=1&&p<=pages));
   let prev=0;
-  for(const p of [...show].sort((a,b)=>a-b)){ if(prev&&p-prev>1)btns.push(`<button class="pgbtn ell">…</button>`); btns.push(`<button class="pgbtn${p===cur?' cur':''}" data-p="${p}">${p}</button>`); prev=p; }
-  btns.push(`<button class="pgbtn" data-p="${cur+1}" ${cur===pages?'disabled':''}>›</button>`);
-  btns.push(`<span class="pg-info">Page ${cur} of ${pages}</span>`);
+  for(const p of [...show].sort((a,b)=>a-b)){
+    if(prev&&p-prev>1) btns.push('<button class="pgbtn ell">…</button>');
+    btns.push('<button class="pgbtn'+(p===cur?' cur':'')+'" data-p="'+p+'">'+p+'</button>');
+    prev=p;
+  }
+  btns.push('<button class="pgbtn" data-p="'+(cur+1)+'" '+(cur===pages?'disabled':'')+'>&#8250;</button>');
+  btns.push('<span class="pg-info">Page '+cur+' of '+pages+'</span>');
   bar.innerHTML=btns.join('');
   bar.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{ S.page=parseInt(b.dataset.p); renderItems(); window.scrollTo({top:0,behavior:'smooth'}); }));
 }
@@ -999,44 +1000,38 @@ function renderHatchFeed() {
     const {key,meta,delta,curExists} = x;
     const url = petImg(meta.id, meta.pt);
     const ico = url
-      ? `<img class="pi" src="${url}" loading="lazy">${vOverlay(meta.pt, meta.sh)}`
-      : `<span class="pp" style="font-size:24px">🐾</span>${vOverlay(meta.pt, meta.sh)}`;
+      ? '<img class="pi" src="'+url+'" loading="lazy">'+vOverlay(meta.pt,meta.sh)
+      : '<span class="pp" style="font-size:24px">🐾</span>'+vOverlay(meta.pt,meta.sh);
     const ratePerMin = H.windowSec>0 ? (delta/(H.windowSec/60)).toFixed(1) : 0;
-    return `<div class="feed-card${delta===0?' inactive':''}" data-key="${esc(key)}" style="animation-delay:${i*12}ms">
-      <div class="fc-ico">${ico}</div>
-      <div class="fc-info">
-        <div class="fc-name">${esc(meta.id)}${(meta.pt||meta.sh)?` <small>${vLabelHtml(meta.pt,meta.sh)}</small>`:''}</div>
-        ${delta>0
-          ?`<div class="fc-delta">+${delta.toLocaleString()} <span style="font-size:11px;color:var(--t2);font-weight:400">hatched</span></div><div class="fc-rate">${ratePerMin}/min avg</div>`
-          :`<div class="fc-delta zero">No activity</div>`}
-        <div class="fc-exists">Supply: ${fmt(curExists)}</div>
-      </div>
-    </div>`;
+    const dHtml = delta>0
+      ? '<div class="fc-delta">+'+delta.toLocaleString()+' <span style="font-size:11px;color:var(--t2);font-weight:400">hatched</span></div><div class="fc-rate">'+ratePerMin+'/min avg</div>'
+      : '<div class="fc-delta zero">No activity</div>';
+    return '<div class="feed-card'+(delta===0?' inactive':'')
+      +'" data-key="'+esc(key)+'" style="animation-delay:'+i*12+'ms">'
+      +'<div class="fc-ico">'+ico+'</div>'
+      +'<div class="fc-info">'
+      +'<div class="fc-name">'+esc(meta.id)+varSmall(meta.pt,meta.sh)+'</div>'
+      +dHtml
+      +'<div class="fc-exists">Supply: '+fmt(curExists)+'</div>'
+      +'</div></div>';
   }).join('');
 
   const activeOnly = withDelta.filter(x => x.delta > 0);
   const tableHtml = activeOnly.map(({key,meta,delta,curExists}) => {
     const url = petImg(meta.id, meta.pt);
-    const sp  = spark(hatchDataForKey(key), 70, 18);
     const ratePerMin = H.windowSec>0 ? (delta/(H.windowSec/60)).toFixed(1) : 0;
     const icoImg = url
-      ? '<img src="'+url+'" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2" onerror="this.style.display=\'none\'">'
+      ? '<img src="'+url+'" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2" onerror="this.style.display='none'">'
       : '<span style="font-size:12px;position:relative;z-index:2">🐾</span>';
     const icoCell = '<div style="width:24px;height:24px;border-radius:4px;overflow:hidden;background:var(--s3);flex-shrink:0;position:relative;display:inline-flex;align-items:center;justify-content:center;">'
       + icoImg + vOverlay(meta.pt,meta.sh) + '</div>';
-    const deltaStr = delta>0?'+'+delta.toLocaleString():delta===0?'—':delta.toLocaleString();
+    const deltaStr = delta>0 ? '+'+delta.toLocaleString() : delta===0 ? '—' : delta.toLocaleString();
     return '<div class="hatch-trow" data-key="'+esc(key)+'">'
       +'<div class="ht-name">'+icoCell+'<span>'+esc(meta.id)+varSmall(meta.pt,meta.sh)+'</span></div>'
       +'<div class="ht-delta'+(delta===0?' zero':'')+'" >'+deltaStr+'</div>'
       +'<div class="ht-exists">'+fmt(curExists)+'</div>'
       +'<div class="ht-rate">'+(delta>0?ratePerMin+'/m':'')+'</div>'
       +'</div>';
-    return `<div class="hatch-trow" data-key="${esc(key)}">
-      <div class="ht-name">${icoCell}<span>${esc(meta.id)}${(meta.pt||meta.sh)?` <small>${vLabelHtml(meta.pt,meta.sh)}</small>`:''}</span></div>
-      <div class="ht-delta${delta===0?' zero':''}">${delta>0?'+'+delta.toLocaleString():delta===0?'—':delta.toLocaleString()}</div>
-      <div class="ht-exists">${fmt(curExists)}</div>
-      <div class="ht-rate">${delta>0?ratePerMin+'/m':''}</div>
-    </div>`;
   }).join('');
 
   document.getElementById('hatch-feed-body').innerHTML = `
@@ -1124,10 +1119,11 @@ function renderAnalytics(){
     const moverRow=arr=>arr.map(({item,chg})=>{
       const cd=item.configData,isPet=item.category==='Pet';
       const url=isPet?petImg(cd.id,cd.pt):null,vl=vLabel(cd.pt,cd.sh);
-      const ico=isPet&&url?`<img class="pi" src="${url}" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2">${vOverlay(cd.pt,cd.sh)}`:
-        `<span class="pp" style="font-size:14px">${cEmoji(item.category)}</span>`;
+      const ico=isPet&&url
+        ?'<img class="pi" src="'+url+'" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2">'+vOverlay(cd.pt,cd.sh)
+        :'<span class="pp" style="font-size:14px">'+cEmoji(item.category)+'</span>';
       return `<div class="mover-item" data-key="${esc(item.key)}"><div class="mover-ico">${ico}</div>
-        <div class="mover-name">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
+        +'<div class="mover-name">'+esc(cd.id)+varSmall(cd.pt,cd.sh)+'</div>'
         <div class="mover-val">${fmt(item.rap)}</div>
         <div class="mover-pct ${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>`;
     }).join('');
@@ -1158,7 +1154,7 @@ function renderAnalytics(){
     const exPts=hDataFor('e|',item.key),vel=pctChange(item,'e|',24);
     const velCls=vel==null?'nil':vel>0?'up':'dn';
     return `<div class="huge-row" data-key="${esc(item.key)}">
-      <div class="hr-name">${url?`<img src="${url}" onerror="this.style.display='none'">`:''}<span>${esc(cd.id)}</span></div>
+      +'<div class="hr-name">'+(url?'<img src="'+url+'" onerror="this.style.display=\'none\'">':'')+'<span>'+esc(cd.id)+'</span></div>'
       <div class="hr-num">${fmt(item.exists)}</div><div class="hr-rap">${fmt(item.rap)}</div>
       <div class="hr-vel ${velCls}">${vel==null?'—':(vel>0?'+':'')+vel.toFixed(2)+'%'}</div>
       <div class="hr-spark">${spark(exPts,70,18)}</div></div>`;
@@ -1175,7 +1171,7 @@ function renderAnalytics(){
     const cd=item.configData,c=catCls(item.category),vl=vLabel(cd.pt,cd.sh);
     return `<div class="sc-item" data-key="${esc(item.key)}">
       <div class="cmeta">${vBadges(cd.pt,cd.sh,cd.tn)}</div>
-      <div class="sc-name">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
+      +'<div class="sc-name">'+esc(cd.id)+varSmall(cd.pt,cd.sh)+'</div>'
       <div class="sc-score-bar"><div class="sc-score-fill" style="width:${((score/maxS)*100).toFixed(1)}%"></div></div>
       <div class="sc-nums"><span class="sn-rap">${fmt(item.rap)}</span><span class="sn-ex">${fmt(item.exists)} supply</span></div></div>`;
   }).join('');
@@ -1213,7 +1209,9 @@ function openModal(item){
   const url=isPet?petImg(cd.id,cd.pt):null,vl=vLabel(cd.pt,cd.sh),mc=marketCap(item);
   const mico=document.getElementById('mico');
   mico.className=`mico ${c}`;
-  mico.innerHTML=isPet&&url?`<img class="pi" src="${url}">${vOverlay(cd.pt,cd.sh)}`:`<span class="pp">${cEmoji(item.category)}</span>${vOverlay(cd.pt,cd.sh)}`;
+  mico.innerHTML=isPet&&url
+    ?'<img class="pi" src="'+url+'">'+vOverlay(cd.pt,cd.sh)
+    :'<span class="pp">'+cEmoji(item.category)+'</span>'+vOverlay(cd.pt,cd.sh);
   document.getElementById('mnam').innerHTML=esc(cd.id)+(vl?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:'');
   document.getElementById('mbdgs').innerHTML=`<span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt,cd.sh,cd.tn)}`;
   const _petDesc = item.category==='Pet' ? (S.pets[cd.id]?.desc||'') : '';
@@ -1480,7 +1478,7 @@ function renderDiamondStats() {
       <div class="dhc-lbl">Most Expensive Titanic</div>
       <div class="dhc-val" style="color:#4ecdc4">${expensiveTitanic ? fmt(expensiveTitanic.rap) : '—'}</div>
       <div class="dhc-sub">${expensiveTitanic ? expensiveTitanic.configData.id : ''}</div>
-    </div>\`;
+    </div>`;
 }
 
 // ── Charts ──────────────────────────────────────────────────────────────────
@@ -1587,16 +1585,16 @@ function renderDiamondsHugeTable() {
     bar.innerHTML = '';
   } else {
     const cur = hdPage, btns = [];
-    btns.push(`<button class="pgbtn" data-hdp="${cur-1}" ${cur===1?'disabled':''}>&#8249;</button>`);
+    btns.push('<button class="pgbtn" data-hdp="'+(cur-1)+'" '+(cur===1?'disabled':'')+'>&#8249;</button>');
     const show = new Set([1,hdPages,cur,cur-1,cur+1,cur-2,cur+2].filter(p=>p>=1&&p<=hdPages));
     let prev=0;
     for (const p of [...show].sort((a,b)=>a-b)) {
       if (prev && p-prev>1) btns.push('<button class="pgbtn ell">…</button>');
-      btns.push(`<button class="pgbtn${p===cur?' cur':''}" data-hdp="${p}">${p}</button>`);
+      btns.push('<button class="pgbtn'+(p===cur?' cur':'')+'" data-hdp="'+p+'">'+p+'</button>');
       prev=p;
     }
-    btns.push(`<button class="pgbtn" data-hdp="${cur+1}" ${cur===hdPages?'disabled':''}>&#8250;</button>`);
-    btns.push(`<span class="pg-info">Page ${cur} of ${hdPages} · ${hdTotal} items</span>`);
+    btns.push('<button class="pgbtn" data-hdp="'+(cur+1)+'" '+(cur===hdPages?'disabled':'')+'>&#8250;</button>');
+    btns.push('<span class="pg-info">Page '+cur+' of '+hdPages+' · '+hdTotal+' items</span>');
     bar.innerHTML = btns.join('');
     bar.querySelectorAll('[data-hdp]').forEach(b => b.addEventListener('click', () => {
       hdPage = parseInt(b.dataset.hdp);
@@ -1612,12 +1610,12 @@ function renderDiamondsHugeTable() {
     const p24 = pctChange(item, 'r|', 24);
     const pCls = p24 == null ? 'nil' : p24 > 0 ? 'up' : 'dn';
     const icoHtml = url
-      ? `<img class="pi" src="${url}" loading="lazy">${vOverlay(cd.pt, cd.sh)}`
-      : `<span class="pp" style="font-size:17px">🐾</span>${vOverlay(cd.pt, cd.sh)}`;
+      ? '<img class="pi" src="'+url+'" loading="lazy">'+vOverlay(cd.pt,cd.sh)
+      : '<span class="pp" style="font-size:17px">🐾</span>'+vOverlay(cd.pt,cd.sh);
 
     return `<div class="hd-row" data-key="${esc(item.key)}">
       <div class="hdr-ico">${icoHtml}</div>
-      <div class="hdr-name">${esc(cd.id)}${(cd.pt||cd.sh) ? ` <small>${vLabelHtml(cd.pt, cd.sh)}</small>` : ''}</div>
+      +'<div class="hdr-name">'+esc(cd.id)+varSmall(cd.pt,cd.sh)+'</div>'
       <div class="hdr-diam">💎 ${fmt(item.rap)}</div>
       <div class="hdr-pct pct ${pCls}">${p24 == null ? '—' : (p24 >= 0 ? '+' : '') + p24.toFixed(2) + '%'}</div>
       <div class="hdr-supply">${fmt(item.exists)}</div>
