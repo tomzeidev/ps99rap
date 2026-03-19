@@ -936,7 +936,7 @@ async function fetchAll() {
       ind.innerHTML = '<span class="ldot"></span> ' + H.snapshots.length + ' snapshots';
     } else {
       ind.className = 'hatch-waiting';
-      ind.innerHTML = '⏳ No data yet — worker cron hasn't run';
+      ind.innerHTML = '⏳ No data yet — worker cron hasn\'t run';
     }
     document.getElementById('hatch-ts').textContent = H.snapshots.length
       ? 'Last: ' + ftime(H.snapshots[H.snapshots.length-1].ts) : '';
