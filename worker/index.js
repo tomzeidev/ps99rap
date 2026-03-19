@@ -1,22 +1,24 @@
 /**
  * PS99 RAP — Cloudflare Worker
  *
- * Cron:  every 5 minutes
- *   → snap:<ts>       full RAP + exists snapshot (RETENTION_DAYS TTL)
- *   → hatch-buffer    rolling compact buffer of Huge/Titanic exists only (HATCH_RETENTION_DAYS)
- *   → latest          current RAP + exists (overwritten each run)
+ * Cron:  every 5 minutes → fetch Big Games API → store snapshot as snap:<ts>
+ * GET /latest  → current RAP + exists data
+ * GET /history → all snapshots within retention window
+ * GET /status  → debug info
  *
- * GET /latest         current RAP + exists data
- * GET /history        all price snapshots within retention window
- * GET /hatch-history  compact Huge/Titanic exists history (from hatch-buffer)
- * GET /status         debug info
+ * Storage: one KV key per snapshot ("snap:<timestamp>")
+ *   → no single-value size limit, supports months of history
+ *
+ * KV namespace binding: PS99_KV (set in wrangler.toml)
  */
 
-const API_RAP              = 'https://ps99.biggamesapi.io/api/rap';
-const API_EXISTS           = 'https://ps99.biggamesapi.io/api/exists';
-const RETENTION_DAYS       = 30;
-const HATCH_RETENTION_DAYS = 7;    // keep 7 days of hatch data (~2016 snapshots)
+const API_RAP        = 'https://ps99.biggamesapi.io/api/rap';
+const API_EXISTS     = 'https://ps99.biggamesapi.io/api/exists';
+const RETENTION_DAYS = 30;   // ← change this to keep more/less history
 
+// ─────────────────────────────────────────────────────────────
+//  CORS headers — allow any origin (GitHub Pages, localhost, etc.)
+// ─────────────────────────────────────────────────────────────
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -24,23 +26,19 @@ const CORS = {
   'Content-Type':                 'application/json',
 };
 
-const ok  = data    => new Response(JSON.stringify(data),           { headers: CORS });
-const err = (msg,s) => new Response(JSON.stringify({ error: msg }), { status: s ?? 500, headers: CORS });
+const ok  = (data)    => new Response(JSON.stringify(data),           { headers: CORS });
+const err = (msg, s)  => new Response(JSON.stringify({ error: msg }), { status: s ?? 500, headers: CORS });
 
-// Same merge key format as the frontend
+// ─────────────────────────────────────────────────────────────
+//  Merge helper — same key format as the frontend
+// ─────────────────────────────────────────────────────────────
 function mergeKey(d) {
   const c = d.configData;
   return `${d.category}|${c.id}|${c.pt || 0}|${c.tn || 0}|${c.sh ? 1 : 0}`;
 }
 
-// Returns true if this pet name should be tracked in the hatch feed
-function isTrackedPet(name) {
-  const n = name.toLowerCase();
-  return n.includes('huge') || n.includes('titanic');
-}
-
 // ─────────────────────────────────────────────────────────────
-//  CRON
+//  CRON — called every 5 minutes by Cloudflare scheduler
 // ─────────────────────────────────────────────────────────────
 async function handleCron(env) {
   const [rapRes, exRes] = await Promise.all([
@@ -49,79 +47,47 @@ async function handleCron(env) {
   ]);
 
   if (rapRes.status !== 'ok' || exRes.status !== 'ok') {
-    console.error('[cron] Bad API response');
+    console.error('[cron] Bad response from Big Games API');
     return;
   }
 
-  const ts = Date.now();
-
-  // ── 1. Full snapshot ──────────────────────────────────────
-  const d = {};
+  const ts  = Date.now();
+  const d   = {};
   for (const item of rapRes.data)  d['r|' + mergeKey(item)] = item.value;
   for (const item of exRes.data)   d['e|' + mergeKey(item)] = item.value;
 
-  // ── 2. Hatch buffer (Huge + Titanic pets only) ────────────
-  // Build compact snapshot: mergeKey → exists value
-  // Also store petMeta so the frontend knows id/pt/sh for each key
-  const hatchD    = {};
-  const petMeta   = {};
-  for (const item of exRes.data) {
-    if (item.category !== 'Pet') continue;
-    if (!isTrackedPet(item.configData.id)) continue;
-    const k = mergeKey(item);
-    hatchD[k]   = item.value;
-    petMeta[k]  = {
-      id: item.configData.id,
-      pt: item.configData.pt || 0,
-      tn: item.configData.tn || 0,
-      sh: !!item.configData.sh,
-    };
-  }
-
-  // Load existing hatch buffer, append, trim, save
-  let hatchBuf = { petMeta: {}, snapshots: [] };
-  try {
-    const raw = await env.PS99_KV.get('hatch-buffer');
-    if (raw) hatchBuf = JSON.parse(raw);
-  } catch (_) {}
-
-  // Merge petMeta (new pets may appear over time)
-  Object.assign(hatchBuf.petMeta, petMeta);
-
-  hatchBuf.snapshots.push({ ts, d: hatchD });
-
-  // Trim to retention window
-  const cutoff = ts - HATCH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
-  hatchBuf.snapshots = hatchBuf.snapshots.filter(s => s.ts >= cutoff);
-
-  // ── 3. Write all three KV entries in parallel ─────────────
+  // Store snapshot under its own key with a TTL matching retention
   const ttlSeconds = RETENTION_DAYS * 24 * 60 * 60;
   await Promise.all([
     env.PS99_KV.put(`snap:${ts}`, JSON.stringify({ ts, d }), { expirationTtl: ttlSeconds }),
-    env.PS99_KV.put('latest',       JSON.stringify({ ts, rap: rapRes.data, exists: exRes.data })),
-    env.PS99_KV.put('hatch-buffer', JSON.stringify(hatchBuf)),
+    env.PS99_KV.put('latest', JSON.stringify({ ts, rap: rapRes.data, exists: exRes.data })),
   ]);
 
-  console.log(`[cron] saved — snaps: hatch buffer has ${hatchBuf.snapshots.length} entries`);
+  console.log(`[cron] snapshot saved at ${new Date(ts).toISOString()}`);
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Fetch all price snapshots within retention window
+//  Fetch all snapshots within retention window
 // ─────────────────────────────────────────────────────────────
 async function getHistory(env) {
   const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
+  // List all keys with prefix "snap:"
   const listed = await env.PS99_KV.list({ prefix: 'snap:' });
   const keys   = listed.keys
     .map(k => ({ name: k.name, ts: parseInt(k.name.split(':')[1]) }))
     .filter(k => k.ts >= cutoff)
     .sort((a, b) => a.ts - b.ts);
 
+  // Fetch values in parallel (batched to avoid hitting rate limits)
   const BATCH = 50;
   const snaps = [];
   for (let i = 0; i < keys.length; i += BATCH) {
-    const vals = await Promise.all(keys.slice(i, i + BATCH).map(k => env.PS99_KV.get(k.name, 'json')));
+    const batch = keys.slice(i, i + BATCH);
+    const vals  = await Promise.all(batch.map(k => env.PS99_KV.get(k.name, 'json')));
     for (const v of vals) if (v) snaps.push(v);
   }
+
   return snaps;
 }
 
@@ -130,12 +96,15 @@ async function getHistory(env) {
 // ─────────────────────────────────────────────────────────────
 async function handleFetch(request, env) {
   const url = new URL(request.url);
+
   if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
 
-  // /latest
+  // ── /latest ──────────────────────────────────────────────
   if (url.pathname === '/latest') {
     const cached = await env.PS99_KV.get('latest', 'json');
     if (cached) return ok({ status: 'ok', ...cached });
+
+    // KV empty on first run — proxy directly
     const [rapRes, exRes] = await Promise.all([
       fetch(API_RAP).then(r => r.json()),
       fetch(API_EXISTS).then(r => r.json()),
@@ -143,49 +112,34 @@ async function handleFetch(request, env) {
     return ok({ status: 'ok', ts: Date.now(), rap: rapRes.data, exists: exRes.data });
   }
 
-  // /history
+  // ── /history ─────────────────────────────────────────────
   if (url.pathname === '/history') {
     const snaps = await getHistory(env);
     return ok({ status: 'ok', count: snaps.length, retention_days: RETENTION_DAYS, data: snaps });
   }
 
-  // /hatch-history  ← NEW
-  if (url.pathname === '/hatch-history') {
-    const raw = await env.PS99_KV.get('hatch-buffer');
-    if (!raw) return ok({ status: 'ok', petMeta: {}, snapshots: [], count: 0 });
-    const buf = JSON.parse(raw);
-    return ok({
-      status:    'ok',
-      count:     buf.snapshots.length,
-      petMeta:   buf.petMeta   || {},
-      snapshots: buf.snapshots || [],
-    });
-  }
-
-  // /status
+  // ── /status (debug) ──────────────────────────────────────
   if (url.pathname === '/status') {
     const listed  = await env.PS99_KV.list({ prefix: 'snap:' });
     const latest  = await env.PS99_KV.get('latest', 'json');
-    const hatch   = await env.PS99_KV.get('hatch-buffer');
-    const hatchBuf = hatch ? JSON.parse(hatch) : { snapshots: [] };
     const oldest  = listed.keys.length
       ? parseInt(listed.keys.sort((a,b) => a.name.localeCompare(b.name))[0].name.split(':')[1])
       : null;
     return ok({
-      status:               'ok',
-      price_snapshots:      listed.keys.length,
-      hatch_snapshots:      hatchBuf.snapshots.length,
-      hatch_pets_tracked:   Object.keys(hatchBuf.petMeta || {}).length,
-      retention_days:       RETENTION_DAYS,
-      hatch_retention_days: HATCH_RETENTION_DAYS,
-      oldest_snapshot:      oldest ? new Date(oldest).toISOString() : null,
-      latest_snapshot:      latest ? new Date(latest.ts).toISOString() : null,
+      status:          'ok',
+      snapshots_total: listed.keys.length,
+      retention_days:  RETENTION_DAYS,
+      oldest_snapshot: oldest ? new Date(oldest).toISOString() : null,
+      latest_snapshot: latest ? new Date(latest.ts).toISOString() : null,
     });
   }
 
   return err('Not found', 404);
 }
 
+// ─────────────────────────────────────────────────────────────
+//  Export
+// ─────────────────────────────────────────────────────────────
 export default {
   fetch:     (req, env) => handleFetch(req, env).catch(e => err(e.message)),
   scheduled: (_evt, env) => handleCron(env).catch(e => console.error('[cron error]', e.message)),
