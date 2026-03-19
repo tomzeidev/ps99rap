@@ -625,7 +625,7 @@ const BG_IMG      = 'https://ps99.biggamesapi.io/image/';
 const PER_PAGE    = 48;
 const REFRESH_MS  = 5 * 60 * 1000;
 const HATCH_MS    = 5 * 60 * 1000;        // re-fetch hatch data from worker every 5 min
-const WORKER_URL  = 'https://ps99rap-worker.thomasmerta.workers.dev'; // nigger
+const WORKER_URL  = 'https://ps99rap-worker.thomasmerta.workers.dev';
 
 /* ══════════════════════════════════════════
    STATE
@@ -977,27 +977,35 @@ function renderHatchFeed() {
     return;
   }
 
-  // Rebuild petMeta from snapshot keys for any pets not yet in the metadata map
+  // Rebuild petMeta from snapshot d-keys — always run so stale/empty entries get fixed
   for (const snap of H.snapshots) {
     for (const key of Object.keys(snap.d)) {
-      if (H.petMeta[key]) continue;
       const parts = key.split('|');
       if (parts[0] !== 'Pet') continue;
-      const name = parts[1]||'';
+      const name = parts[1] || '';
       if (!name.toLowerCase().includes('huge') && !name.toLowerCase().includes('titanic')) continue;
-      H.petMeta[key] = {id:name, pt:parseInt(parts[2])||0, tn:parseInt(parts[3])||0, sh:parts[4]==='1'};
+      // Overwrite if the existing entry is missing its id (happens with compact format on first run)
+      if (!H.petMeta[key] || !H.petMeta[key].id) {
+        H.petMeta[key] = {id:name, pt:parseInt(parts[2])||0, tn:parseInt(parts[3])||0, sh:parts[4]==='1'};
+      }
     }
   }
   const allKeys = Object.keys(H.petMeta).filter(k => {
-    const n = H.petMeta[k].id.toLowerCase();
+    const meta = H.petMeta[k];
+    if (!meta || !meta.id) return false;  // guard against empty entries
+    const n = meta.id.toLowerCase();
     if (H.htype==='huge'    && !n.includes('huge'))    return false;
     if (H.htype==='titanic' && !n.includes('titanic')) return false;
     return true;
   });
 
   const withDelta = allKeys.map(key => ({
-    key, meta: H.petMeta[key], delta: hatchDelta(key)||0, curExists: now.d[key]??null,
-  })).sort((a,b) => b.delta - a.delta);
+    key,
+    meta: H.petMeta[key],
+    delta: hatchDelta(key) || 0,
+    curExists: now.d[key] ?? null,
+  })).filter(x => x.meta && x.meta.id)   // drop any with missing metadata
+     .sort((a,b) => b.delta - a.delta);
 
   const totalHatched = withDelta.reduce((s,x) => s+(x.delta>0?x.delta:0), 0);
   const activeCount  = withDelta.filter(x => x.delta>0).length;
@@ -1417,76 +1425,111 @@ function renderDiamonds() {
 
 // ── Stat cards ──────────────────────────────────────────────────────────────
 function renderDiamondStats() {
-  const diamItems = getDiamondItems();
+  const diamItems  = getDiamondItems();
   const totalSupply = diamItems.reduce((s, x) => s + (x.exists || 0), 0);
 
   const huges = S.items.filter(x =>
-    x.category === 'Pet' &&
-    x.configData.id.toLowerCase().includes('huge') &&
+    x.category === 'Pet' && x.configData.id.toLowerCase().includes('huge') &&
     !x.configData.pt && !x.configData.sh && x.rap != null
   );
-  const avgRap = huges.length
-    ? huges.reduce((s, x) => s + x.rap, 0) / huges.length
-    : null;
-  const cheapestHuge = huges.length
-    ? huges.reduce((a, b) => a.rap < b.rap ? a : b)
-    : null;
-  const mostExpensive = huges.length
-    ? huges.reduce((a, b) => a.rap > b.rap ? a : b)
-    : null;
-  const titanics = S.items.filter(x =>
-    x.category === 'Pet' &&
-    x.configData.id.toLowerCase().includes('titanic') &&
+  const avgRap        = huges.length ? huges.reduce((s,x)=>s+x.rap,0)/huges.length : null;
+  const cheapestHuge  = huges.length ? huges.reduce((a,b)=>a.rap<b.rap?a:b) : null;
+  const mostExpensive = huges.length ? huges.reduce((a,b)=>a.rap>b.rap?a:b) : null;
+  const titanics      = S.items.filter(x =>
+    x.category === 'Pet' && x.configData.id.toLowerCase().includes('titanic') &&
     !x.configData.pt && !x.configData.sh && x.rap != null
   );
-  const cheapestTitanic  = titanics.length ? titanics.reduce((a,b) => a.rap < b.rap ? a : b) : null;
-  const expensiveTitanic = titanics.length ? titanics.reduce((a,b) => a.rap > b.rap ? a : b) : null;
+  const cheapestTitanic  = titanics.length ? titanics.reduce((a,b)=>a.rap<b.rap?a:b) : null;
+  const expensiveTitanic = titanics.length ? titanics.reduce((a,b)=>a.rap>b.rap?a:b) : null;
 
-  // 24h supply change
-  const snap24 = closestSnap(24);
-  let supplyChg = null;
-  if (snap24) {
-    let oldTotal = 0;
-    for (const item of diamItems) {
-      const v = snap24.d['e|' + item.key];
-      if (v != null) oldTotal += v;
-    }
-    if (oldTotal > 0) supplyChg = ((totalSupply - oldTotal) / oldTotal) * 100;
+  function supplyAt(snap) {
+    let t = 0;
+    for (const item of diamItems) { const v = snap.d['e|'+item.key]; if (v!=null) t+=v; }
+    return t;
   }
 
-  document.getElementById('diam-stat-row').innerHTML = `
-    <div class="diam-hero-card supply">
-      <div class="dhc-lbl">Total Diamond Supply</div>
-      <div class="dhc-val">${fmt(totalSupply)}</div>
-      <div class="dhc-sub">${supplyChg != null
-        ? (supplyChg >= 0 ? '+' : '') + supplyChg.toFixed(3) + '% in 24h'
-        : 'Accumulating history…'}</div>
-    </div>
-    <div class="diam-hero-card rate">
-      <div class="dhc-lbl">Avg Huge Price</div>
-      <div class="dhc-val">${fmt(avgRap)}</div>
-      <div class="dhc-sub">diamonds · ${huges.length} huges tracked</div>
-    </div>
-    <div class="diam-hero-card power">
-      <div class="dhc-lbl">Cheapest Huge</div>
-      <div class="dhc-val">${cheapestHuge ? fmt(cheapestHuge.rap) : '—'}</div>
-      <div class="dhc-sub">${cheapestHuge ? cheapestHuge.configData.id : ''}</div>
-    </div>
-    <div class="diam-hero-card huges">
-      <div class="dhc-lbl">Most Expensive Huge</div>
-      <div class="dhc-val">${mostExpensive ? fmt(mostExpensive.rap) : '—'}</div>
-      <div class="dhc-sub">${mostExpensive ? mostExpensive.configData.id : ''}</div>
-    </div>
-    <div class="diam-hero-card">
-      <div class="dhc-lbl">Cheapest Titanic</div>
-      <div class="dhc-val" style="color:#4ecdc4">${cheapestTitanic ? fmt(cheapestTitanic.rap) : '—'}</div>
-      <div class="dhc-sub">${cheapestTitanic ? cheapestTitanic.configData.id : 'None tracked'}</div>
-    </div>
-    <div class="diam-hero-card">
-      <div class="dhc-lbl">Most Expensive Titanic</div>
-      <div class="dhc-val" style="color:#4ecdc4">${expensiveTitanic ? fmt(expensiveTitanic.rap) : '—'}</div>
-      <div class="dhc-sub">${expensiveTitanic ? expensiveTitanic.configData.id : ''}</div>
-    </div>`;
+  function supplyChange(hoursAgo) {
+    const snap = closestSnap(hoursAgo); if (!snap) return null;
+    const old  = supplyAt(snap); if (old === 0) return null;
+    const delta = totalSupply - old;
+    return { delta, pct: (delta/old)*100, hours: hoursAgo };
+  }
+
+  const chg1h  = supplyChange(1);
+  const chg24h = supplyChange(24);
+  const chg7d  = supplyChange(168);
+
+  function project(targetHours) {
+    const ref = chg24h || chg7d || chg1h; if (!ref) return null;
+    return totalSupply + (ref.delta / ref.hours) * targetHours;
+  }
+
+  function chgChip(c) {
+    if (!c) return '<span style="color:var(--t3);font-size:10px">Need more history</span>';
+    const col  = c.pct >= 0 ? '#2ecc71' : '#e74c3c';
+    const sign = c.pct >= 0 ? '+' : '';
+    return '<span style="color:'+col+';font-family:\'Space Mono\',monospace;font-size:10.5px;font-weight:700">'+sign+c.pct.toFixed(4)+'%</span>'
+          +' <span style="color:var(--t2);font-size:10px">('+sign+fmt(c.delta)+')</span>';
+  }
+
+  function projCard(label, val) {
+    const inner = val == null
+      ? '<div class="dhc-val" style="color:var(--t3);font-size:13px">Need more history</div>'
+      : '<div class="dhc-val" style="color:#a78bfa">'+fmt(val)+'</div><div class="dhc-sub">projected \uD83D\uDCB8 in economy</div>';
+    return '<div class="diam-hero-card"><div class="dhc-lbl">'+label+'</div>'+inner+'</div>';
+  }
+
+  const refLabel = chg24h ? '24h' : chg7d ? '7d' : '1h';
+
+  document.getElementById('diam-stat-row').innerHTML =
+    '<div class="diam-hero-card supply">'
+      +'<div class="dhc-lbl">Total Diamond Supply</div>'
+      +'<div class="dhc-val">'+fmt(totalSupply)+'</div>'
+      +'<div class="dhc-sub">Current \uD83D\uDCB8 in economy</div>'
+    +'</div>'
+    +'<div class="diam-hero-card rate">'
+      +'<div class="dhc-lbl">Avg Huge Price</div>'
+      +'<div class="dhc-val">'+fmt(avgRap)+'</div>'
+      +'<div class="dhc-sub">diamonds \u00B7 '+huges.length+' huges</div>'
+    +'</div>'
+    +'<div class="diam-hero-card power">'
+      +'<div class="dhc-lbl">Cheapest Huge</div>'
+      +'<div class="dhc-val">'+(cheapestHuge?fmt(cheapestHuge.rap):'\u2014')+'</div>'
+      +'<div class="dhc-sub">'+(cheapestHuge?cheapestHuge.configData.id:'')+'</div>'
+    +'</div>'
+    +'<div class="diam-hero-card huges">'
+      +'<div class="dhc-lbl">Most Expensive Huge</div>'
+      +'<div class="dhc-val">'+(mostExpensive?fmt(mostExpensive.rap):'\u2014')+'</div>'
+      +'<div class="dhc-sub">'+(mostExpensive?mostExpensive.configData.id:'')+'</div>'
+    +'</div>'
+    +'<div class="diam-hero-card">'
+      +'<div class="dhc-lbl">Cheapest Titanic</div>'
+      +'<div class="dhc-val" style="color:#4ecdc4">'+(cheapestTitanic?fmt(cheapestTitanic.rap):'\u2014')+'</div>'
+      +'<div class="dhc-sub">'+(cheapestTitanic?cheapestTitanic.configData.id:'None tracked')+'</div>'
+    +'</div>'
+    +'<div class="diam-hero-card">'
+      +'<div class="dhc-lbl">Most Expensive Titanic</div>'
+      +'<div class="dhc-val" style="color:#4ecdc4">'+(expensiveTitanic?fmt(expensiveTitanic.rap):'\u2014')+'</div>'
+      +'<div class="dhc-sub">'+(expensiveTitanic?expensiveTitanic.configData.id:'')+'</div>'
+    +'</div>'
+    // Inflation banner
+    +'<div class="diam-hero-card" style="grid-column:1/-1;background:var(--s2);border-color:var(--b2)">'
+      +'<div class="dhc-lbl" style="margin-bottom:10px">Supply Inflation</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">'
+        +'<div><div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">1 Hour</div>'+chgChip(chg1h)+'</div>'
+        +'<div><div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">24 Hours</div>'+chgChip(chg24h)+'</div>'
+        +'<div><div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">7 Days</div>'+chgChip(chg7d)+'</div>'
+      +'</div>'
+    +'</div>'
+    // Projections
+    +projCard('Projected +1h',  project(1))
+    +projCard('Projected +24h', project(24))
+    +projCard('Projected +7d',  project(168))
+    +'<div class="diam-hero-card" style="opacity:.6">'
+      +'<div class="dhc-lbl">Projection basis</div>'
+      +'<div class="dhc-val" style="color:var(--t2);font-size:13px;padding-top:3px">Linear</div>'
+      +'<div class="dhc-sub">Avg rate from last '+refLabel+'</div>'
+    +'</div>';
 }
 
 // ── Charts ──────────────────────────────────────────────────────────────────
