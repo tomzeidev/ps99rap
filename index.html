@@ -630,7 +630,7 @@ const WORKER_URL  = 'https://ps99rap-worker.thomasmerta.workers.dev';
    STATE
 ══════════════════════════════════════════ */
 const S = {
-  items:[], pets:{}, hist:[], hist7d:[],
+  items:[], pets:{}, hist:[],
   view:'grid', sort:'rap-desc', cat:'All',
   variantType:'all',  // all | normal | golden | rainbow
   shinyFilter:'all',  // 'all' | 'shiny' | 'no-shiny'
@@ -665,43 +665,27 @@ function mergeData(rapArr,existsArr){
 /* ══════════════════════════════════════════
    HISTORY
 ══════════════════════════════════════════ */
-// S.hist = 24h snapshots (5-min)
-// S.hist7d = 7d snapshots (1-hr) — used for 7d % changes
 async function loadHistory(){
   try{
-    const [r24, r7] = await Promise.all([
-      fetch(WORKER_URL+'/history').then(r=>r.ok?r.json():Promise.reject(r.status)),
-      fetch(WORKER_URL+'/history?range=7d').then(r=>r.ok?r.json():{data:[]}),
-    ]);
-    S.hist   = r24.data || [];
-    S.hist7d = r7.data  || [];
-    document.getElementById('h-snaps').textContent = S.hist.length+' snapshots';
-  }catch(e){
-    console.warn('[history]',e);
-    S.hist=[]; S.hist7d=[];
-    document.getElementById('h-snaps').textContent='history unavailable';
-  }
+    const res=await fetch(WORKER_URL+'/history');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const json=await res.json();
+    S.hist=json.data||[];
+    const days=json.retention_days||'?';
+    document.getElementById('h-snaps').textContent=S.hist.length+' snapshots ('+days+'d)';
+  }catch(e){ console.warn('[history]',e.message); S.hist=[]; document.getElementById('h-snaps').textContent='history unavailable'; }
 }
-function hDataFor(prefix,key){
-  // Use 7d buffer for longer-range queries, 24h for recent
-  const combined = [...S.hist7d, ...S.hist]
-    .sort((a,b)=>a.ts-b.ts)
-    .filter((s,i,arr)=>i===0||s.ts-arr[i-1].ts>60000); // dedup: keep if >1min apart
-  return combined.map(s=>({ts:s.ts,v:s.d[prefix+key]})).filter(p=>p.v!==undefined);
-}
+function hDataFor(prefix,key){ return S.hist.map(s=>({ts:s.ts,v:s.d[prefix+key]})).filter(p=>p.v!==undefined); }
 
 /* ══════════════════════════════════════════
    % CHANGE (from worker history)
 ══════════════════════════════════════════ */
 function closestSnap(hoursAgo){
-  // Search 7d buffer for older lookups, 24h for recent
-  const pool = hoursAgo > 20 ? [...S.hist7d, ...S.hist] : S.hist;
-  if(!pool.length) return null;
+  if(!S.hist.length) return null;
   const target=Date.now()-hoursAgo*3600000;
   let best=null,bestDiff=Infinity;
-  for(const s of pool){ const d=Math.abs(s.ts-target); if(d<bestDiff){bestDiff=d;best=s;} }
-  // Allow up to 2x the requested window as tolerance
-  if(bestDiff>hoursAgo*3600000*2+600000) return null;
+  for(const s of S.hist){ const d=Math.abs(s.ts-target); if(d<bestDiff){bestDiff=d;best=s;} }
+  if(bestDiff>hoursAgo*3600000*0.5+300000) return null;
   return best;
 }
 function pctChange(item,prefix,hoursAgo){
@@ -745,10 +729,6 @@ function vLabelHtml(pt, sh) {
   else if(pt===1) parts.push('<span style="color:#ffd700;font-weight:600">Golden</span>');
   if(sh) parts.push('<span style="color:#d0e4ff;font-weight:600">Shiny</span>');
   return parts.join(' ');
-}
-function petDesc(item) {
-  if (item.category !== 'Pet') return '';
-  return S.pets[item.configData.id]?.desc || '';
 }
 function vBadges(pt,sh,tn){
   let h='';
@@ -837,51 +817,43 @@ function iconHtml(item,cls){
 ══════════════════════════════════════════ */
 function mkCard(item,i){
   const cd=item.configData,c=catCls(item.category);
-  const mc=marketCap(item);
+  const mc=marketCap(item),vl=vLabel(cd.pt,cd.sh);
   const rapPts=hDataFor('r|',item.key),sp=spark(rapPts,196,22);
   const p1h=pctChange(item,'r|',1),p24=pctChange(item,'r|',24),p7d=pctChange(item,'r|',168);
-  const desc=petDesc(item);
-  const varHtml=(cd.pt||cd.sh)?(' <small>'+vLabelHtml(cd.pt,cd.sh)+'</small>'):'';
-  const descHtml=desc?('<div class="card-desc">'+esc(desc)+'</div>'):'';
-  const iconArea=item.category==='Pet'?('<div class="iw">'+iconHtml(item,'pi')+'</div>'):'';
-  const sparkHtml=sp?('<div class="spark-wrap">'+sp+'</div>'):'<div class="no-spark"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Recording…</div>';
-  return '<div class="card '+c+'" style="animation-delay:'+Math.min(i,30)*8+'ms" data-idx="'+i+'">'
-    +iconArea
-    +'<div class="cbody">'
-    +'<div class="cmeta"><span class="ctag '+c+'">'+esc(item.category)+'</span>'+vBadges(cd.pt,cd.sh,cd.tn)+'</div>'
-    +'<div class="cname">'+esc(cd.id)+varHtml+'</div>'
-    +descHtml
-    +'<div class="cvals">'
-    +'<div class="cval-box'+(item.rap==null?' no-data':'')+'"><div class="cval-lbl">RAP</div><div class="cval-num">'+fmt(item.rap)+'</div></div>'
-    +'<div class="cval-box exists'+(item.exists==null?' no-data':'')+'"><div class="cval-lbl">Supply</div><div class="cval-num">'+fmt(item.exists)+'</div></div>'
-    +'<div class="cval-box mcap'+(mc==null?' no-data':'')+'"><div class="cval-lbl">Mkt Cap</div><div class="cval-num">'+fmt(mc)+'</div></div>'
-    +'</div>'
-    +'<div class="card-pcts">'+pctChip(p1h,'1h')+pctChip(p24,'24h')+pctChip(p7d,'7d')+'</div>'
-    +sparkHtml
-    +'</div></div>';
+  return `<div class="card ${c}" style="animation-delay:${Math.min(i,30)*8}ms" data-idx="${i}">
+    ${item.category==='Pet'?`<div class="iw">${iconHtml(item,'pi')}</div>`:''}
+    <div class="cbody">
+      <div class="cmeta"><span class="ctag ${c}">${esc(item.category)}</span>${vBadges(cd.pt,cd.sh,cd.tn)}</div>
+      <div class="cname">${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</div>
+      ${(()=>{const _d=item.category==='Pet'?S.pets[cd.id]?.desc:'';return _d?`<div class="card-desc">${esc(_d)}</div>`:''})()}
+      <div class="cvals">
+        <div class="cval-box${item.rap==null?' no-data':''}"><div class="cval-lbl">RAP</div><div class="cval-num">${fmt(item.rap)}</div></div>
+        <div class="cval-box exists${item.exists==null?' no-data':''}"><div class="cval-lbl">Supply</div><div class="cval-num">${fmt(item.exists)}</div></div>
+        <div class="cval-box mcap${mc==null?' no-data':''}"><div class="cval-lbl">Mkt Cap</div><div class="cval-num">${fmt(mc)}</div></div>
+      </div>
+      <div class="card-pcts">${pctChip(p1h,'1h')}${pctChip(p24,'24h')}${pctChip(p7d,'7d')}</div>
+      ${sp?`<div class="spark-wrap">${sp}</div>`:`<div class="no-spark"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Recording…</div>`}
+    </div></div>`;
 }
 
 function mkRow(item,i){
   const cd=item.configData,c=catCls(item.category);
-  const mc=marketCap(item);
+  const mc=marketCap(item),vl=vLabel(cd.pt,cd.sh);
   const rapPts=hDataFor('r|',item.key),sp=spark(rapPts,56,20);
   const p24=pctChange(item,'r|',24),p7d=pctChange(item,'r|',168);
-  const desc=petDesc(item);
-  const varHtml=(cd.pt||cd.sh)?(' <small>'+vLabelHtml(cd.pt,cd.sh)+'</small>'):'';
-  const descHtml=desc?('<span style="font-size:9.5px;color:var(--t3);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(desc)+'</span>'):'';
-  return '<div class="row" style="animation-delay:'+Math.min(i,30)*5+'ms" data-idx="'+i+'">'
-    +'<div class="ri">'+iconHtml(item,'pi')+'</div>'
-    +'<div class="rcat"><span class="ctag '+c+'">'+esc(item.category)+'</span></div>'
-    +'<div class="rname" style="display:flex;flex-direction:column;gap:1px">'
-    +'<span>'+esc(cd.id)+varHtml+'</span>'
-    +descHtml
-    +'</div>'
-    +'<div class="rbdgs">'+vBadges(cd.pt,cd.sh,cd.tn)+'</div>'
-    +'<div class="rspark">'+sp+'</div>'
-    +'<div class="rcol'+(item.rap==null?' no-data':'')+'"><span class="rcol-lbl">RAP</span><span class="rcol-val">'+fmt(item.rap)+'</span><div class="rcol-pcts">'+pctChip(p24,'24h')+pctChip(p7d,'7d')+'</div></div>'
-    +'<div class="rcol exists'+(item.exists==null?' no-data':'')+'"><span class="rcol-lbl">Supply</span><span class="rcol-val">'+fmt(item.exists)+'</span></div>'
-    +'<div class="rcol mcap'+(mc==null?' no-data':'')+'"><span class="rcol-lbl">Mkt Cap</span><span class="rcol-val">'+fmt(mc)+'</span></div>'
-    +'</div>';
+  return `<div class="row" style="animation-delay:${Math.min(i,30)*5}ms" data-idx="${i}">
+    <div class="ri">${iconHtml(item,'pi')}</div>
+    <div class="rcat"><span class="ctag ${c}">${esc(item.category)}</span></div>
+    <div class="rname" style="display:flex;flex-direction:column;gap:1px">
+      <span>${esc(cd.id)}${(cd.pt||cd.sh)?` <small>${vLabelHtml(cd.pt,cd.sh)}</small>`:''}</span>
+      ${(()=>{const _d=item.category==='Pet'?S.pets[cd.id]?.desc:'';return _d?`<span style="font-size:9.5px;color:var(--t3);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(_d)}</span>`:''})()}
+    </div>
+    <div class="rbdgs">${vBadges(cd.pt,cd.sh,cd.tn)}</div>
+    <div class="rspark">${sp}</div>
+    <div class="rcol${item.rap==null?' no-data':''}"><span class="rcol-lbl">RAP</span><span class="rcol-val">${fmt(item.rap)}</span><div class="rcol-pcts">${pctChip(p24,'24h')}${pctChip(p7d,'7d')}</div></div>
+    <div class="rcol exists${item.exists==null?' no-data':''}"><span class="rcol-lbl">Supply</span><span class="rcol-val">${fmt(item.exists)}</span></div>
+    <div class="rcol mcap${mc==null?' no-data':''}"><span class="rcol-lbl">Mkt Cap</span><span class="rcol-val">${fmt(mc)}</span></div>
+  </div>`;
 }
 
 /* ══════════════════════════════════════════
@@ -1340,7 +1312,7 @@ async function refresh(){
   try{
     const latestRes=await fetch(WORKER_URL+'/latest').then(r=>r.json());
     S.items=mergeData(latestRes.rap||[],latestRes.exists||[]);
-    await loadHistory(); // refreshes both S.hist and S.hist7d
+    await loadHistory();
     document.getElementById('hts').textContent='Updated '+new Date().toLocaleTimeString();
     document.getElementById('h-total').textContent=S.items.length.toLocaleString()+' items';
     recompute(); renderItems();
