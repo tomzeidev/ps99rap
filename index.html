@@ -631,7 +631,7 @@ const WORKER_URL  = 'https://ps99rap-worker.thomasmerta.workers.dev';
    STATE
 ══════════════════════════════════════════ */
 const S = {
-  items:[], pets:{}, hist:[], hist7d:[],
+  items:[], pets:{}, hist:[],
   view:'grid', sort:'rap-desc', cat:'All',
   variantType:'all',  // all | normal | golden | rainbow
   shinyFilter:'all',  // 'all' | 'shiny' | 'no-shiny'
@@ -666,27 +666,20 @@ function mergeData(rapArr,existsArr){
 /* ══════════════════════════════════════════
    HISTORY
 ══════════════════════════════════════════ */
-// S.hist = 24h snapshots (5-min)
-// S.hist7d = 7d snapshots (1-hr) — used for 7d % changes
+// S.hist — price snapshots loaded from worker /all endpoint
 async function loadHistory(){ /* data loaded by fetchAll() */ }
 function hDataFor(prefix,key){
-  // Use 7d buffer for longer-range queries, 24h for recent
-  const combined = [...S.hist7d, ...S.hist]
-    .sort((a,b)=>a.ts-b.ts)
-    .filter((s,i,arr)=>i===0||s.ts-arr[i-1].ts>60000); // dedup: keep if >1min apart
-  return combined.map(s=>({ts:s.ts,v:s.d[prefix+key]})).filter(p=>p.v!==undefined);
+  return S.hist.map(s=>({ts:s.ts,v:s.d[prefix+key]})).filter(p=>p.v!==undefined);
 }
 
 /* ══════════════════════════════════════════
    % CHANGE (from worker history)
 ══════════════════════════════════════════ */
 function closestSnap(hoursAgo){
-  // Search 7d buffer for older lookups, 24h for recent
-  const pool = hoursAgo > 20 ? [...S.hist7d, ...S.hist] : S.hist;
-  if(!pool.length) return null;
+  if(!S.hist.length) return null;
   const target=Date.now()-hoursAgo*3600000;
   let best=null,bestDiff=Infinity;
-  for(const s of pool){ const d=Math.abs(s.ts-target); if(d<bestDiff){bestDiff=d;best=s;} }
+  for(const s of S.hist){ const d=Math.abs(s.ts-target); if(d<bestDiff){bestDiff=d;best=s;} }
   // Allow up to 2x the requested window as tolerance
   if(bestDiff>hoursAgo*3600000*2+600000) return null;
   return best;
