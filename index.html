@@ -668,21 +668,7 @@ function mergeData(rapArr,existsArr){
 ══════════════════════════════════════════ */
 // S.hist = 24h snapshots (5-min)
 // S.hist7d = 7d snapshots (1-hr) — used for 7d % changes
-async function loadHistory(){
-  try{
-    const [r24, r7] = await Promise.all([
-      fetch(WORKER_URL+'/history').then(r=>r.ok?r.json():Promise.reject(r.status)),
-      fetch(WORKER_URL+'/history?range=7d').then(r=>r.ok?r.json():{data:[]}),
-    ]);
-    S.hist   = r24.data || [];
-    S.hist7d = r7.data  || [];
-    document.getElementById('h-snaps').textContent = S.hist.length+' snapshots';
-  }catch(e){
-    console.warn('[history]',e);
-    S.hist=[]; S.hist7d=[];
-    document.getElementById('h-snaps').textContent='history unavailable';
-  }
-}
+async function loadHistory(){ /* data loaded by fetchAll() */ }
 function hDataFor(prefix,key){
   // Use 7d buffer for longer-range queries, 24h for recent
   const combined = [...S.hist7d, ...S.hist]
@@ -924,27 +910,41 @@ function renderPagination(){
    5-minute granularity. Shared across all visitors. Persists on refresh.
 ════════════════════════════════════════════════════════ */
 
-async function loadHatchHistory() {
-  try {
-    const res = await fetch(WORKER_URL + '/hatch-history');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    H.snapshots = json.snapshots || [];
-    H.petMeta   = json.petMeta   || {};
+// Hatch history loaded by fetchAll() — stub kept for compat
+async function loadHatchHistory() { /* data loaded in fetchAll */ }
+
+// ── MASTER FETCH: single request, served from edge cache ─────────────────────
+async function fetchAll() {
+  const res = await fetch(WORKER_URL + '/all');
+  if (!res.ok) throw new Error('Worker /all returned ' + res.status);
+  const json = await res.json();
+
+  // Market data
+  S.items = mergeData(json.rap || [], json.exists || []);
+
+  // Price history
+  S.hist = (json.history && json.history.data) ? json.history.data : [];
+  document.getElementById('h-snaps').textContent = S.hist.length + ' snapshots';
+
+  // Hatch data
+  if (json.hatch) {
+    H.snapshots = json.hatch.snapshots || [];
+    H.petMeta   = json.hatch.petMeta   || {};
     const ind = document.getElementById('hatch-live-ind');
     if (H.snapshots.length > 0) {
       ind.className = 'hatch-live';
       ind.innerHTML = '<span class="ldot"></span> ' + H.snapshots.length + ' snapshots';
     } else {
       ind.className = 'hatch-waiting';
-      ind.innerHTML = '⏳ No data yet — worker cron hasn\'t run';
+      ind.innerHTML = '⏳ No data yet — worker cron hasn't run';
     }
     document.getElementById('hatch-ts').textContent = H.snapshots.length
       ? 'Last: ' + ftime(H.snapshots[H.snapshots.length-1].ts) : '';
-  } catch(e) {
-    console.warn('[hatch]', e.message);
-    document.getElementById('hatch-live-ind').innerHTML = '⚠ Could not load hatch data';
   }
+
+  document.getElementById('h-total').textContent = S.items.length.toLocaleString() + ' items';
+  document.getElementById('hts').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  return json;
 }
 
 function hatchDataForKey(key) {
@@ -1271,9 +1271,8 @@ document.querySelectorAll('.nav-tab').forEach(b=>b.addEventListener('click',()=>
   if(b.dataset.page==='analytics') renderAnalytics();
   if(b.dataset.page==='diamonds')  renderDiamonds();
   if(b.dataset.page==='hatch'){
-    // Load server-side hatch history, then start refresh interval
-    loadHatchHistory().then(renderHatchFeed);
-    if(!hatchPollTimer) hatchPollTimer=setInterval(()=>loadHatchHistory().then(renderHatchFeed), HATCH_MS);
+    renderHatchFeed();
+    if(!hatchPollTimer) hatchPollTimer=setInterval(refresh, HATCH_MS);
   }
 }));
 
@@ -1329,21 +1328,16 @@ document.querySelectorAll('[data-htype]').forEach(b=>b.addEventListener('click',
    INIT
 ══════════════════════════════════════════ */
 async function init(){
-  prog(8,'Fetching live data…');
-  const [latestRes,pr]=await Promise.all([
-    fetch(WORKER_URL+'/latest').then(r=>{ if(!r.ok)throw new Error('Worker /latest returned '+r.status); return r.json(); }),
+  prog(8,'Fetching data…');
+  const [, pr] = await Promise.all([
+    fetchAll(),
     fetch(API_PETS).then(r=>r.json()),
   ]);
-  prog(50,'Merging datasets…');
-  S.items=mergeData(latestRes.rap||[],latestRes.exists||[]);
+  prog(70,'Building pet index…');
   for(const p of (pr.data||[])){
     const cd=p.configData;
     S.pets[p.configName]={thumbId:aid(cd.thumbnail),goldenId:aid(cd.goldenThumbnail),desc:cd.indexDesc||''};
   }
-  prog(75,'Loading price history…');
-  await loadHistory();
-  document.getElementById('h-total').textContent=S.items.length.toLocaleString()+' items';
-  document.getElementById('hts').textContent='Updated '+new Date().toLocaleTimeString();
   prog(100);
   setTimeout(()=>document.getElementById('ldr').classList.add('gone'),280);
   recompute(); renderCats(); renderItems();
@@ -1359,12 +1353,9 @@ init().catch(err=>{
 
 async function refresh(){
   try{
-    const latestRes=await fetch(WORKER_URL+'/latest').then(r=>r.json());
-    S.items=mergeData(latestRes.rap||[],latestRes.exists||[]);
-    await loadHistory(); // refreshes both S.hist and S.hist7d
-    document.getElementById('hts').textContent='Updated '+new Date().toLocaleTimeString();
-    document.getElementById('h-total').textContent=S.items.length.toLocaleString()+' items';
+    await fetchAll();
     recompute(); renderItems();
+    if(document.getElementById('page-hatch').classList.contains('on'))     renderHatchFeed();
     if(document.getElementById('page-analytics').classList.contains('on')) renderAnalytics();
     if(document.getElementById('page-diamonds').classList.contains('on'))  renderDiamonds();
   }catch(_){}
