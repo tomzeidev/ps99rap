@@ -623,8 +623,7 @@ const API_PETS    = 'https://ps99.biggamesapi.io/api/collection/Pets';
 const API_EXISTS  = 'https://ps99.biggamesapi.io/api/exists'; // used only by worker
 const BG_IMG      = 'https://ps99.biggamesapi.io/image/';
 const PER_PAGE    = 48;
-const REFRESH_MS  = 5 * 60 * 1000;
-const HATCH_MS    = 5 * 60 * 1000;        // re-fetch hatch data from worker every 5 min
+const REFRESH_MS  = 30 * 1000;
 const WORKER_URL  = 'https://ps99rap-worker.thomasmerta.workers.dev';
 
 /* ══════════════════════════════════════════
@@ -642,7 +641,7 @@ const S = {
 const H = {
   snapshots: [],  // [{ts, d:{mergeKey: exists}}] from worker hatch-buffer
   petMeta:   {},  // mergeKey → {id, pt, tn, sh}
-  windowSec: 300, // default 5 min (data is at 5-min intervals)
+  windowSec: 300, // default 5 min window
   htype:     'both',
   rateChart: null,
 };
@@ -900,7 +899,7 @@ function renderPagination(){
 
 /* ════════════════════════════════════════════════════════
    HATCH FEED — server-side data from worker /hatch-history
-   5-minute granularity. Shared across all visitors. Persists on refresh.
+   30-second granularity. Shared across all visitors. Persists on refresh.
 ════════════════════════════════════════════════════════ */
 
 // Hatch history loaded by fetchAll() — stub kept for compat
@@ -963,7 +962,7 @@ function renderHatchFeed() {
     document.getElementById('hatch-feed-body').innerHTML = `
       <div class="warming-up">
         <div class="wu-icon">🥚</div>
-        <p>Waiting for data — the worker cron runs every 5 minutes.</p>
+        <p>Waiting for data — the worker refreshes every 30 seconds.</p>
         <div class="wu-bar"><div class="wu-fill"></div></div>
         <div class="wu-sub">${H.snapshots.length} snapshot${H.snapshots.length!==1?'s':''} stored so far</div>
       </div>`;
@@ -1254,8 +1253,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 /* ══════════════════════════════════════════
    PAGE NAV
 ══════════════════════════════════════════ */
-let hatchPollTimer=null;
-
 document.querySelectorAll('.nav-tab').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
@@ -1263,10 +1260,7 @@ document.querySelectorAll('.nav-tab').forEach(b=>b.addEventListener('click',()=>
   document.getElementById('page-'+b.dataset.page).classList.add('on');
   if(b.dataset.page==='analytics') renderAnalytics();
   if(b.dataset.page==='diamonds')  renderDiamonds();
-  if(b.dataset.page==='hatch'){
-    renderHatchFeed();
-    if(!hatchPollTimer) hatchPollTimer=setInterval(refresh, HATCH_MS);
-  }
+  if(b.dataset.page==='hatch') renderHatchFeed();
 }));
 
 /* ══════════════════════════════════════════
@@ -1365,7 +1359,7 @@ setInterval(refresh,REFRESH_MS);
 // Returns true if an item is a "diamond" item
 function isDiamondItem(item) {
   // Only the raw Diamonds currency items (id === 'Diamonds'), not flags/potions/enchants
-  return item.configData.id === 'Diamonds';
+  return item?.configData?.id === 'Diamonds';
 }
 
 // Get all diamond items from merged S.items
@@ -1413,14 +1407,14 @@ function renderDiamondStats() {
   const totalSupply = diamItems.reduce((s, x) => s + (x.exists || 0), 0);
 
   const huges = S.items.filter(x =>
-    x.category === 'Pet' && x.configData.id.toLowerCase().includes('huge') &&
+    x.category === 'Pet' && (x.configData?.id || '').toLowerCase().includes('huge') &&
     !x.configData.pt && !x.configData.sh && x.rap != null
   );
   const avgRap        = huges.length ? huges.reduce((s,x)=>s+x.rap,0)/huges.length : null;
   const cheapestHuge  = huges.length ? huges.reduce((a,b)=>a.rap<b.rap?a:b) : null;
   const mostExpensive = huges.length ? huges.reduce((a,b)=>a.rap>b.rap?a:b) : null;
   const titanics      = S.items.filter(x =>
-    x.category === 'Pet' && x.configData.id.toLowerCase().includes('titanic') &&
+    x.category === 'Pet' && (x.configData?.id || '').toLowerCase().includes('titanic') &&
     !x.configData.pt && !x.configData.sh && x.rap != null
   );
   const cheapestTitanic  = titanics.length ? titanics.reduce((a,b)=>a.rap<b.rap?a:b) : null;

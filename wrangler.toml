@@ -2,7 +2,7 @@ name = "ps99rap-worker"
 main = "worker/index.js"
 compatibility_date = "2024-01-01"
 
-# Cron trigger — polls every 5 minutes
+# Cron trigger — background safety refresh every 5 minutes
 [triggers]
 crons = ["*/5 * * * *"]
 
