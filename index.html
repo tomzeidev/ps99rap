@@ -411,14 +411,13 @@ main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:26px 24p
 /* ═══════════════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════════════ */
-const API_RAP    = 'https://ps99.biggamesapi.io/api/rap';
-const API_EXISTS = 'https://ps99.biggamesapi.io/api/exists';
 const API_PETS   = 'https://ps99.biggamesapi.io/api/collection/Pets';
 const BG_IMG     = 'https://ps99.biggamesapi.io/image/';
-const HK         = 'ps99rap_h_v5';
-const MAX_H      = 72;
-const MIN_INT    = 30 * 1000; // 30 seconds (testing) — change to 20 * 60 * 1000 for production
 const PER_PAGE   = 48;
+const REFRESH_MS = 5 * 60 * 1000; // re-fetch from worker every 5 minutes
+
+// !! REPLACE with your deployed worker URL after running: wrangler deploy
+const WORKER_URL = 'REPLACE_WITH_YOUR_WORKER_URL';
 
 /* ═══════════════════════════════════════════
    STATE
@@ -467,21 +466,17 @@ function mergeData(rapArr, existsArr){
 }
 
 /* ═══════════════════════════════════════════
-   HISTORY / SNAPSHOT
-   History keys: "rap|<mergeKey>" and "ex|<mergeKey>"
+   HISTORY  (loaded from Cloudflare Worker KV)
 ═══════════════════════════════════════════ */
-function snapshot(){
-  const last = S.hist[S.hist.length - 1];
-  if (last && Date.now() - last.ts < MIN_INT) return;
-  const snap = {ts: Date.now(), d: {}};
-  for (const item of S.items){
-    if (item.rap    != null) snap.d['r|' + item.key] = item.rap;
-    if (item.exists != null) snap.d['e|' + item.key] = item.exists;
+async function loadHistory() {
+  try {
+    const res  = await fetch(WORKER_URL + '/history');
+    const json = await res.json();
+    S.hist = json.data || [];
+    document.getElementById('h-snaps').textContent = S.hist.length + ' snapshots';
+  } catch(_) {
+    S.hist = [];
   }
-  S.hist.push(snap);
-  if (S.hist.length > MAX_H) S.hist = S.hist.slice(-MAX_H);
-  try { localStorage.setItem(HK, JSON.stringify(S.hist)); } catch(_){}
-  document.getElementById('h-snaps').textContent = S.hist.length + ' snapshots';
 }
 
 function hDataFor(prefix, key){
@@ -895,17 +890,16 @@ document.querySelectorAll('.vb').forEach(b => b.addEventListener('click', () => 
    INIT
 ═══════════════════════════════════════════ */
 async function init(){
-  try { S.hist = JSON.parse(localStorage.getItem(HK) || '[]'); } catch(_){}
   prog(8, 'Fetching market data…');
 
-  const [rr, er, pr] = await Promise.all([
-    fetch(API_RAP).then(r=>r.json()),
-    fetch(API_EXISTS).then(r=>r.json()),
+  // Fetch live data + history in parallel
+  const [latestRes, pr] = await Promise.all([
+    fetch(WORKER_URL + '/latest').then(r=>r.json()),
     fetch(API_PETS).then(r=>r.json()),
   ]);
 
-  prog(55, 'Merging datasets…');
-  S.items = mergeData(rr.data||[], er.data||[]);
+  prog(50, 'Merging datasets…');
+  S.items = mergeData(latestRes.rap||[], latestRes.exists||[]);
 
   // Build pet icon map
   for (const p of (pr.data||[])){
@@ -913,14 +907,11 @@ async function init(){
     S.pets[p.configName] = {thumbId: aid(cd.thumbnail), goldenId: aid(cd.goldenThumbnail)};
   }
 
-  prog(85, 'Saving snapshot…');
-  snapshot();
+  prog(75, 'Loading price history…');
+  await loadHistory();
 
-  const rapCt    = (rr.data||[]).length;
-  const existsCt = (er.data||[]).length;
-  document.getElementById('h-total').textContent  = S.items.length.toLocaleString() + ' items';
-  document.getElementById('h-snaps').textContent  = S.hist.length + ' snapshots';
-  document.getElementById('hts').textContent      = 'Updated ' + new Date().toLocaleTimeString();
+  document.getElementById('h-total').textContent = S.items.length.toLocaleString() + ' items';
+  document.getElementById('hts').textContent     = 'Updated ' + new Date().toLocaleTimeString();
 
   prog(100);
   setTimeout(() => document.getElementById('ldr').classList.add('gone'), 280);
@@ -938,23 +929,20 @@ init().catch(err => {
 });
 
 // ── AUTO-REFRESH ──
-// Re-fetches live data on the MIN_INT cadence and saves a snapshot each time.
-// Keeps the view live without requiring a page reload.
+// Re-fetches /latest and /history from the worker every REFRESH_MS.
+// The worker's cron saves a new snapshot every 5 min server-side.
 async function refresh(){
   try {
-    const [rr, er] = await Promise.all([
-      fetch(API_RAP).then(r=>r.json()),
-      fetch(API_EXISTS).then(r=>r.json()),
-    ]);
-    S.items = mergeData(rr.data||[], er.data||[]);
-    snapshot();
-    document.getElementById('hts').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    const latestRes = await fetch(WORKER_URL + '/latest').then(r=>r.json());
+    S.items = mergeData(latestRes.rap||[], latestRes.exists||[]);
+    await loadHistory();
+    document.getElementById('hts').textContent     = 'Updated ' + new Date().toLocaleTimeString();
     document.getElementById('h-total').textContent = S.items.length.toLocaleString() + ' items';
     recompute();
     renderItems();
   } catch(_) { /* silent — keep existing data on network error */ }
 }
-setInterval(refresh, MIN_INT);
+setInterval(refresh, REFRESH_MS);
 </script>
 </body>
 </html>

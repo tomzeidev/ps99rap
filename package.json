@@ -1,0 +1,12 @@
+{
+  "name": "ps99rap",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy:worker": "wrangler deploy",
+    "dev:worker": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^3"
+  }
+}
