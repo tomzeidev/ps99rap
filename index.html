@@ -972,6 +972,17 @@ function renderHatchFeed() {
     return;
   }
 
+  // Rebuild petMeta from snapshot keys for any pets not yet in the metadata map
+  for (const snap of H.snapshots) {
+    for (const key of Object.keys(snap.d)) {
+      if (H.petMeta[key]) continue;
+      const parts = key.split('|');
+      if (parts[0] !== 'Pet') continue;
+      const name = parts[1]||'';
+      if (!name.toLowerCase().includes('huge') && !name.toLowerCase().includes('titanic')) continue;
+      H.petMeta[key] = {id:name, pt:parseInt(parts[2])||0, tn:parseInt(parts[3])||0, sh:parts[4]==='1'};
+    }
+  }
   const allKeys = Object.keys(H.petMeta).filter(k => {
     const n = H.petMeta[k].id.toLowerCase();
     if (H.htype==='huge'    && !n.includes('huge'))    return false;
@@ -1062,10 +1073,11 @@ function renderHatchRateChart() {
     const prev=H.snapshots[i-1], cur=H.snapshots[i];
     let total = 0;
     for (const [key, curEx] of Object.entries(cur.d)) {
-      const meta = H.petMeta[key]; if (!meta) continue;
-      const n = meta.id.toLowerCase();
-      if (H.htype==='huge'    && !n.includes('huge'))    continue;
-      if (H.htype==='titanic' && !n.includes('titanic')) continue;
+      // Derive name from mergeKey (format: Pet|name|pt|tn|sh)
+      const parts = key.split('|');
+      const name = (parts[1]||'').toLowerCase();
+      if (H.htype==='huge'    && !name.includes('huge'))    continue;
+      if (H.htype==='titanic' && !name.includes('titanic')) continue;
       const prevEx = prev.d[key];
       if (prevEx!=null && curEx>prevEx) total += curEx-prevEx;
     }
@@ -1123,10 +1135,7 @@ function renderAnalytics(){
       const ico=isPet&&url
         ?'<img class="pi" src="'+url+'" style="width:88%;height:88%;object-fit:contain;position:relative;z-index:2">'+vOverlay(cd.pt,cd.sh)
         :'<span class="pp" style="font-size:14px">'+cEmoji(item.category)+'</span>';
-      return `<div class="mover-item" data-key="${esc(item.key)}"><div class="mover-ico">${ico}</div>
-        +'<div class="mover-name">'+esc(cd.id)+varSmall(cd.pt,cd.sh)+'</div>'
-        <div class="mover-val">${fmt(item.rap)}</div>
-        <div class="mover-pct ${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>`;
+      return `<div class="mover-item" data-key="${esc(item.key)}"><div class="mover-ico">${ico}</div><div class="mover-name">${esc(cd.id)}${varSmall(cd.pt,cd.sh)}</div><div class="mover-val">${fmt(item.rap)}</div><div class="mover-pct ${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div></div>`;
     }).join('');
     document.getElementById('movers-wrap').innerHTML=`
       <div class="movers-panel"><div class="movers-panel-hdr up">▲ Top Gainers</div>${moverRow(gainers)}</div>
@@ -1154,11 +1163,7 @@ function renderAnalytics(){
     const cd=item.configData,url=petImg(cd.id,cd.pt);
     const exPts=hDataFor('e|',item.key),vel=pctChange(item,'e|',24);
     const velCls=vel==null?'nil':vel>0?'up':'dn';
-    return `<div class="huge-row" data-key="${esc(item.key)}">
-      +'<div class="hr-name">'+(url?'<img src="'+url+'" onerror="this.style.display=\'none\'">':'')+'<span>'+esc(cd.id)+'</span></div>'
-      <div class="hr-num">${fmt(item.exists)}</div><div class="hr-rap">${fmt(item.rap)}</div>
-      <div class="hr-vel ${velCls}">${vel==null?'—':(vel>0?'+':'')+vel.toFixed(2)+'%'}</div>
-      <div class="hr-spark">${spark(exPts,70,18)}</div></div>`;
+    return `<div class="huge-row" data-key="${esc(item.key)}"><div class="hr-name">${url?'<img src="'+url+'">':''}<span>${esc(cd.id)}</span></div><div class="hr-num">${fmt(item.exists)}</div><div class="hr-rap">${fmt(item.rap)}</div><div class="hr-vel ${velCls}">${vel==null?'—':(vel>0?'+':'')+vel.toFixed(2)+'%'}</div><div class="hr-spark">${spark(exPts,70,18)}</div></div>`;
   }).join('');
   document.querySelectorAll('.huge-row[data-key]').forEach(el=>el.addEventListener('click',()=>{ const item=S.items.find(x=>x.key===el.dataset.key); if(item)openModal(item); }));
 
@@ -1170,10 +1175,7 @@ function renderAnalytics(){
   const maxS=scored[0].score;
   document.getElementById('scarcity-grid').innerHTML=scored.slice(0,24).map(({item,score})=>{
     const cd=item.configData,c=catCls(item.category),vl=vLabel(cd.pt,cd.sh);
-    return `<div class="sc-item" data-key="${esc(item.key)}">
-      <div class="cmeta">${vBadges(cd.pt,cd.sh,cd.tn)}</div>
-      +'<div class="sc-name">'+esc(cd.id)+varSmall(cd.pt,cd.sh)+'</div>'
-      <div class="sc-score-bar"><div class="sc-score-fill" style="width:${((score/maxS)*100).toFixed(1)}%"></div></div>
+    return `<div class="sc-item" data-key="${esc(item.key)}"><div class="cmeta">${vBadges(cd.pt,cd.sh,cd.tn)}</div><div class="sc-name">${esc(cd.id)}${varSmall(cd.pt,cd.sh)}</div><div class="sc-score-bar"><div class="sc-score-fill" style="width:${((score/maxS)*100).toFixed(1)}%"></div></div>
       <div class="sc-nums"><span class="sn-rap">${fmt(item.rap)}</span><span class="sn-ex">${fmt(item.exists)} supply</span></div></div>`;
   }).join('');
   document.querySelectorAll('.sc-item[data-key]').forEach(el=>el.addEventListener('click',()=>{ const item=S.items.find(x=>x.key===el.dataset.key); if(item)openModal(item); }));
@@ -1614,10 +1616,7 @@ function renderDiamondsHugeTable() {
       ? '<img class="pi" src="'+url+'" loading="lazy">'+vOverlay(cd.pt,cd.sh)
       : '<span class="pp" style="font-size:17px">🐾</span>'+vOverlay(cd.pt,cd.sh);
 
-    return `<div class="hd-row" data-key="${esc(item.key)}">
-      <div class="hdr-ico">${icoHtml}</div>
-      +'<div class="hdr-name">'+esc(cd.id)+varSmall(cd.pt,cd.sh)+'</div>'
-      <div class="hdr-diam">💎 ${fmt(item.rap)}</div>
+    return `<div class="hd-row" data-key="${esc(item.key)}"><div class="hdr-ico">${icoHtml}</div><div class="hdr-name">${esc(cd.id)}${varSmall(cd.pt,cd.sh)}</div><div class="hdr-diam">💎 ${fmt(item.rap)}</div>
       <div class="hdr-pct pct ${pCls}">${p24 == null ? '—' : (p24 >= 0 ? '+' : '') + p24.toFixed(2) + '%'}</div>
       <div class="hdr-supply">${fmt(item.exists)}</div>
     </div>`;
